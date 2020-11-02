@@ -1,0 +1,7 @@
+include ':warehouse-firebase'
+include ':warehouse-datastore'
+include ':warehouse-rules'
+include ':warehouse-realm'
+include ':warehouse'
+include ':app'
+rootProject.name = "Warehouse"
