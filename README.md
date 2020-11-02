@@ -1,5 +1,8 @@
 # Warehouse
 
+**Important: This library is pre-alpha and there will be tons that will change!  
+If you like the idea, feel free to open an issue or contribute a PR.**
+
 TODO docs...
 
 ## Warehouse & Boxes
@@ -24,6 +27,60 @@ TODO Explain feature
 
 ### Dynamic box management at runtime
 TODO
+
+## Api usage
+
+### Setup
+
+```Kotlin
+val warehouse = Warehouse(
+    boxes = listOf(
+        LogBox.withTag("LogBox"),
+        RealmBox.fromRealm(
+            config,
+            mapper = RealmMessageMapper, 
+            idProperty = "id", 
+            idSelector = { it.id }
+        ),
+        InMemoryBox.default(),
+        FirebaseBox.fromDatabase(
+            FirebaseDatabase.getInstance().reference.database,
+            reference = "/test",
+            idSelector = { it.id }
+        )
+    ),
+    trucks = listOf(
+        SingleCargoTruck { message ->
+            showToast(message.toString())
+        },
+        BatchTruck(batchSize = 2) { messages ->
+            showToast("$messages ready to be processed!")
+        }
+    ),
+    WarehouseConfiguration(leaderBox = InMemoryBox.NAME)
+)
+```
+
+### Store data
+```Kotlin
+warehouse.store(Message("random-id-1", "Recipient", "This is a message"))
+    .subscribe()
+```
+
+### Retrieve data from a single container
+```Kotlin
+warehouse.getAllFor<RealmBox<*, Message>>()
+    .subscribe { messages ->
+        showToast("${messages.size} messages loaded")
+    }
+```
+
+### Retrieve a single element
+```Kotlin
+warehouse["id"].subscribe { messages ->
+    showToast("${messages.size} loaded for id")
+}
+```
 
 ## What's missing for the first beta release?
 

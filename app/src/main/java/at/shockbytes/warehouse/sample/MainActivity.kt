@@ -9,7 +9,6 @@ import at.shockbytes.warehouse.WarehouseConfiguration
 import at.shockbytes.warehouse.box.InMemoryBox
 import at.shockbytes.warehouse.box.LogBox
 import at.shockbytes.warehouse.realm.RealmBox
-import at.shockbytes.warehouse.sample.realm.RealmMessage
 import at.shockbytes.warehouse.sample.realm.RealmMessageMapper
 import at.shockbytes.warehouse.truck.BatchTruck
 import at.shockbytes.warehouse.truck.SingleCargoTruck
@@ -99,7 +98,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun getAll() {
 
-        warehouse.getAllFor<RealmBox<RealmMessage, Message>>()
+        warehouse.getAllFor<RealmBox<*, Message>>()
             .subscribe({ messages ->
                 Timber.e("Get all!")
                 Timber.e(messages.toString())
@@ -117,6 +116,13 @@ class MainActivity : AppCompatActivity() {
         */
 
         // warehouse.getAll()
+    }
+
+    private fun getSingleElementForId(id: String) {
+
+        warehouse["id"].subscribe { messages ->
+            showToast("${messages.size} loaded for id")
+        }
     }
 
 
