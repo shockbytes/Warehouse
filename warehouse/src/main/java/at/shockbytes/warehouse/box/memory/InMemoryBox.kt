@@ -1,7 +1,8 @@
-package at.shockbytes.warehouse.box
+package at.shockbytes.warehouse.box.memory
 
 import at.shockbytes.warehouse.IdentityMapper
 import at.shockbytes.warehouse.Mapper
+import at.shockbytes.warehouse.box.Box
 import at.shockbytes.warehouse.util.asObservable
 import at.shockbytes.warehouse.util.completableOf
 import at.shockbytes.warehouse.util.indexOfFirstOrNull

@@ -28,6 +28,9 @@ TODO Explain feature
 ### Dynamic box management at runtime
 TODO
 
+### Internal / External data representation
+TODO Explain concept of data mapping
+
 ## Api usage
 
 ### Setup
@@ -47,6 +50,13 @@ val warehouse = Warehouse(
             FirebaseDatabase.getInstance().reference.database,
             reference = "/test",
             idSelector = { it.id }
+        ),
+        FileBox.fromContext(
+            applicationContext,
+            fileName = "filename.json",
+            mapper = IdentityMapper(),
+            idSelector = { it.id },
+            fileSerializer = GsonFileSerializer()
         )
     ),
     trucks = listOf(

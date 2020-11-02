@@ -1,8 +1,9 @@
-package at.shockbytes.warehouse.box
+package at.shockbytes.warehouse.box.log
 
 import android.util.Log
 import at.shockbytes.warehouse.IdentityMapper
 import at.shockbytes.warehouse.Mapper
+import at.shockbytes.warehouse.box.Box
 import at.shockbytes.warehouse.util.completableOf
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable

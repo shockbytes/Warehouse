@@ -3,11 +3,14 @@ package at.shockbytes.warehouse.sample
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import at.shockbytes.warehouse.IdentityMapper
 import at.shockbytes.warehouse.R
 import at.shockbytes.warehouse.Warehouse
 import at.shockbytes.warehouse.WarehouseConfiguration
-import at.shockbytes.warehouse.box.InMemoryBox
-import at.shockbytes.warehouse.box.LogBox
+import at.shockbytes.warehouse.box.file.FileBox
+import at.shockbytes.warehouse.box.file.GsonFileSerializer
+import at.shockbytes.warehouse.box.memory.InMemoryBox
+import at.shockbytes.warehouse.box.log.LogBox
 import at.shockbytes.warehouse.realm.RealmBox
 import at.shockbytes.warehouse.sample.realm.RealmMessageMapper
 import at.shockbytes.warehouse.truck.BatchTruck
@@ -45,6 +48,13 @@ class MainActivity : AppCompatActivity() {
                 LogBox.withTag("LogBox"),
                 RealmBox.fromRealm(config, mapper = RealmMessageMapper, idProperty = "id", idSelector = { it.id }),
                 InMemoryBox.default(),
+                FileBox.fromContext(
+                    applicationContext,
+                    fileName = "filename.json",
+                    mapper = IdentityMapper(),
+                    idSelector = { it.id },
+                    fileSerializer = GsonFileSerializer()
+                )
                 /*
                 FirebaseBox.fromDatabase(
                     FirebaseDatabase.getInstance().reference.database,

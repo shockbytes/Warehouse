@@ -1,20 +1,21 @@
-package at.shockbytes.warehouse.box
+package at.shockbytes.warehouse.box.file
 
 import android.content.Context
 import at.shockbytes.warehouse.Mapper
+import at.shockbytes.warehouse.box.Box
 import at.shockbytes.warehouse.rules.ExperimentalBox
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 
 @ExperimentalBox
-class FileBox<I, E>(
+class FileBox<I, E> protected constructor(
     context: Context,
     fileName: String,
     mapper: Mapper<I, E>,
     idSelector: (I) -> String,
     private val fileSerializer: FileSerializer<E>
-) : Box<I,E>(mapper, idSelector) {
+) : Box<I, E>(mapper, idSelector) {
 
     override val name: String = "file-android"
 
@@ -34,14 +35,26 @@ class FileBox<I, E>(
         TODO("Not yet implemented")
     }
 
-    interface FileSerializer<T> {
-
-        fun serializeToFile(value: T): String
-
-        fun serializeFromFile(str: String): T
-    }
-
     override fun getSingleElement(id: String): Single<E> {
         TODO("Not yet implemented")
+    }
+
+    companion object {
+
+        inline fun <reified I, E> fromContext(
+            context: Context,
+            fileName: String,
+            mapper: Mapper<I, E>,
+            fileSerializer: FileSerializer<E>,
+            noinline idSelector: (I) -> String,
+        ): FileBox<I, E> {
+            return FileBox(
+                context,
+                fileName,
+                mapper,
+                idSelector,
+                fileSerializer
+            )
+        }
     }
 }
