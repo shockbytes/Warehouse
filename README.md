@@ -63,7 +63,7 @@ are no implementation-specific requirements.
 
 ### Setup
 
-``` kotlin
+```kotlin
 val warehouse = Warehouse(
     boxes = listOf(
         LogBox.withTag("LogBox"),
@@ -100,13 +100,13 @@ val warehouse = Warehouse(
 ```
 
 ### Store data
-``` kotlin
+```kotlin
 warehouse.store(Message("random-id-1", "Recipient", "This is a message"))
     .subscribe()
 ```
 
 ### Retrieve data from a single container
-``` kotlin
+```kotlin
 warehouse.getAllFor<RealmBox<*, Message>>()
     .subscribe { messages ->
         showToast("${messages.size} messages loaded")
@@ -114,7 +114,7 @@ warehouse.getAllFor<RealmBox<*, Message>>()
 ```
 
 ### Retrieve a single element
-``` kotlin
+```kotlin
 warehouse["id"].subscribe { messages ->
     showToast("${messages.size} loaded for id")
 }
