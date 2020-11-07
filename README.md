@@ -8,7 +8,7 @@ of objects. If you have to store a list of books, or a collection of incoming or
 you with this task. But there's more to that. `Warehouse` allows you to specify in which `Boxes` the
 data should be stored. `Boxes` are an abstraction for data storage backends. There are already some `Box` implementations
 ready for usage, such as `FirebaseBox`, `RealmBox` or `FileBox`, storing your data in your storage backend
-of choice (Check out [Supported Boxes](#-Supported-Boxes)). This allows you to store the same data in different
+of choice (Check out the [Supported Boxes](#supported-boxes) section). This allows you to store the same data in different
 backends without doing all the synchronization between the backends by yourself. Notice that you can always
 implement your own `Box`.
 
@@ -63,7 +63,7 @@ are no implementation-specific requirements.
 
 ### Setup
 
-```Kotlin
+``` kotlin
 val warehouse = Warehouse(
     boxes = listOf(
         LogBox.withTag("LogBox"),
@@ -100,13 +100,13 @@ val warehouse = Warehouse(
 ```
 
 ### Store data
-```Kotlin
+``` kotlin
 warehouse.store(Message("random-id-1", "Recipient", "This is a message"))
     .subscribe()
 ```
 
 ### Retrieve data from a single container
-```Kotlin
+``` kotlin
 warehouse.getAllFor<RealmBox<*, Message>>()
     .subscribe { messages ->
         showToast("${messages.size} messages loaded")
@@ -114,7 +114,7 @@ warehouse.getAllFor<RealmBox<*, Message>>()
 ```
 
 ### Retrieve a single element
-```Kotlin
+``` kotlin
 warehouse["id"].subscribe { messages ->
     showToast("${messages.size} loaded for id")
 }
@@ -151,7 +151,7 @@ for a hobby project.
 | Firebase Database |                    |    Remote / REST     |
 |   Android File    |                    |                      |
 
-#### Why is Room just considered "potential"?
+#### Why is Room only considered "potential"?
 Room provides way more than just a "data backend", providing more features than just
 saving and retrieving data. Room would only work in a degraded manner, since the whole
 querying would not work in companion with `Warehouse`. Also, `Room` requires more work
