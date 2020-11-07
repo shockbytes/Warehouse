@@ -58,7 +58,7 @@ class MainActivity : AppCompatActivity() {
                 /*
                 FirebaseBox.fromDatabase(
                     FirebaseDatabase.getInstance().reference.database,
-                    reference = "/test",
+                    reference = "/messages",
                     idSelector = { it.id }
                 )
                  */

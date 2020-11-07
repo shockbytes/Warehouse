@@ -19,6 +19,7 @@ class Warehouse<E>(
         syncLeader()
     }
 
+    // TODO Use dedicated `BoxSync` class for this
     private fun syncLeader() {
         findLeaderFromConfig()
             ?.let(::syncBoxesWithLeaders)
