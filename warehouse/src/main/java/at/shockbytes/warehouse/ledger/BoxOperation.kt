@@ -8,6 +8,13 @@ sealed class BoxOperation<E> {
 
     abstract fun perform(box: Box<E>)
 
+    data class InitOperation<E>(
+        override val name: String = "init",
+    ) : BoxOperation<E>() {
+        override fun perform(box: Box<E>) = Unit
+    }
+
+
     data class StoreOperation<E>(
         val value: E,
         override val name: String = "store",

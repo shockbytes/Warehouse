@@ -1,9 +1,9 @@
 package at.shockbytes.warehouse
 
 import at.shockbytes.warehouse.box.Box
+import at.shockbytes.warehouse.ledger.BoxOperation
+import at.shockbytes.warehouse.ledger.Ledger
 import at.shockbytes.warehouse.sync.BoxSync
-import at.shockbytes.warehouse.truck.Truck
-import at.shockbytes.warehouse.util.completableOf
 import at.shockbytes.warehouse.util.merge
 import at.shockbytes.warehouse.util.toObservableFromIterable
 import io.reactivex.rxjava3.core.Completable
@@ -17,6 +17,7 @@ import io.reactivex.rxjava3.core.Observable
  */
 class Warehouse<E>(
     private val boxes: List<Box<E>>,
+    private val ledger: Ledger<E>,
     private val config: WarehouseConfiguration = WarehouseConfiguration()
 ) {
 
@@ -35,7 +36,7 @@ class Warehouse<E>(
     ): Completable {
         return performCompletableWriteBoxAction(writePredicate) { box ->
             box.store(value)
-        }
+        }.andThen(ledger.storeOperation(BoxOperation.StoreOperation(value)))
     }
 
     /**
@@ -47,7 +48,7 @@ class Warehouse<E>(
     ): Completable {
         return performCompletableWriteBoxAction(writePredicate) { box ->
             box.update(value)
-        }
+        }.andThen(ledger.storeOperation(BoxOperation.UpdateOperation(value)))
     }
 
     /**
@@ -59,7 +60,7 @@ class Warehouse<E>(
     ): Completable {
         return performCompletableWriteBoxAction(writePredicate) { box ->
             box.delete(value)
-        }
+        }.andThen(ledger.storeOperation(BoxOperation.DeleteOperation(value)))
     }
 
     private fun performCompletableWriteBoxAction(
@@ -91,6 +92,7 @@ class Warehouse<E>(
     }
 
     /**
+     * TODO This needs to be REAL reactive
      * Public API
      */
     fun getAll(): Observable<List<E>> {

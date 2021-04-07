@@ -5,6 +5,8 @@ import io.reactivex.rxjava3.core.Single
 
 interface LedgerEngine<E> {
 
+    val last: LedgerBlock<E>
+
     fun entries(): Single<List<LedgerBlock<E>>>
 
     fun store(operation: BoxOperation<E>): Completable

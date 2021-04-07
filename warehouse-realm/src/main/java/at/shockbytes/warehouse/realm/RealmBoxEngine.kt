@@ -27,7 +27,7 @@ class RealmBoxEngine<I : RealmObject, E> protected constructor(
     private val idSelector: (I) -> String,
 ) : BoxEngine<I, E> {
 
-    override val name: String = "realm-android"
+    override val name: String = NAME
 
     override fun getSingleElement(id: String): Single<E> {
         return Single.fromCallable {
@@ -86,6 +86,8 @@ class RealmBoxEngine<I : RealmObject, E> protected constructor(
     }
 
     companion object {
+
+        const val NAME = "realm-android"
 
         inline fun <reified I : RealmObject, E> fromRealm(
             config: RealmConfiguration = RealmConfiguration.Builder().build(),

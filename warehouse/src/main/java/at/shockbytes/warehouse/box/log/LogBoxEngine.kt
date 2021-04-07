@@ -12,7 +12,7 @@ class LogBoxEngine<I, E> private constructor(
     private val tag: String
 ) : BoxEngine<I, E> {
 
-    override val name: String = "log-android"
+    override val name: String = NAME
 
     override fun getSingleElement(id: String): Single<E> {
         Log.d(tag, "Trying to get resource with id: $id")
@@ -49,5 +49,7 @@ class LogBoxEngine<I, E> private constructor(
         fun <E> withTag(tag: String): LogBoxEngine<E, E> = LogBoxEngine(tag)
 
         private const val DEFAULT_TAG = "LogBox"
+
+        const val NAME = "log-android"
     }
 }
