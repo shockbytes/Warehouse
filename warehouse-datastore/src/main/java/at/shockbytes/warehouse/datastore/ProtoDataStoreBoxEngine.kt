@@ -6,19 +6,20 @@ import androidx.datastore.Serializer
 import androidx.datastore.createDataStore
 import at.shockbytes.warehouse.Mapper
 import at.shockbytes.warehouse.box.Box
+import at.shockbytes.warehouse.box.BoxEngine
 import at.shockbytes.warehouse.rules.ExperimentalBox
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 
 @ExperimentalBox
-class ProtoDataStoreBox<I, E>(
+class ProtoDataStoreBoxEngine<I, E>(
     context: Context,
     dataStoreName: String,
     serializer: Serializer<I>,
-    mapper: Mapper<I, E>,
-    idSelector: (I) -> String
-) : Box<I, E>(mapper, idSelector) {
+    private val mapper: Mapper<I, E>,
+    private val idSelector: (I) -> String
+) : BoxEngine<I, E> {
 
     private val dataStore: DataStore<I> = createDataStore(context, dataStoreName, serializer)
 

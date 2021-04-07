@@ -1,7 +1,7 @@
 package at.shockbytes.warehouse.realm
 
 import at.shockbytes.warehouse.Mapper
-import at.shockbytes.warehouse.box.Box
+import at.shockbytes.warehouse.box.BoxEngine
 import at.shockbytes.warehouse.rules.BetaBox
 import at.shockbytes.warehouse.util.completableOf
 import hu.akarnokd.rxjava3.bridge.RxJavaBridge
@@ -19,13 +19,13 @@ import java.lang.IllegalStateException
  * - Threading
  */
 @BetaBox
-class RealmBox<I : RealmObject, E> protected constructor(
+class RealmBoxEngine<I : RealmObject, E> protected constructor(
     private val realm: Realm,
     private val storageClass: Class<I>,
     private val idProperty: String,
-    mapper: Mapper<I, E>,
-    idSelector: (I) -> String,
-) : Box<I, E>(mapper, idSelector) {
+    private val mapper: Mapper<I, E>,
+    private val idSelector: (I) -> String,
+) : BoxEngine<I, E> {
 
     override val name: String = "realm-android"
 
@@ -92,8 +92,8 @@ class RealmBox<I : RealmObject, E> protected constructor(
             idProperty: String,
             mapper: Mapper<I, E>,
             noinline idSelector: (I) -> String
-        ): RealmBox<I, E> {
-            return RealmBox(
+        ): RealmBoxEngine<I, E> {
+            return RealmBoxEngine(
                 Realm.getInstance(config),
                 I::class.java,
                 idProperty,

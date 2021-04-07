@@ -3,6 +3,7 @@ package at.shockbytes.warehouse.box.memory
 import at.shockbytes.warehouse.IdentityMapper
 import at.shockbytes.warehouse.Mapper
 import at.shockbytes.warehouse.box.Box
+import at.shockbytes.warehouse.box.BoxEngine
 import at.shockbytes.warehouse.util.asObservable
 import at.shockbytes.warehouse.util.completableOf
 import at.shockbytes.warehouse.util.indexOfFirstOrNull
@@ -11,10 +12,10 @@ import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 import java.lang.IllegalStateException
 
-class InMemoryBox<I, E> private constructor(
-    mapper: Mapper<I, E>,
-    idSelector: (I) -> String,
-) : Box<I, E>(mapper, idSelector) {
+class InMemoryBoxEngine<I, E> private constructor(
+    private val mapper: Mapper<I, E>,
+    private val idSelector: (I) -> String,
+) : BoxEngine<I, E> {
 
     private val storage: MutableList<I> = mutableListOf()
 
@@ -76,11 +77,11 @@ class InMemoryBox<I, E> private constructor(
 
         fun <E> default(
             idSelector: (E) -> String = { "" }
-        ): InMemoryBox<E, E> = InMemoryBox(IdentityMapper(), idSelector)
+        ): InMemoryBoxEngine<E, E> = InMemoryBoxEngine(IdentityMapper(), idSelector)
 
         fun <I, E> custom(
             mapper: Mapper<I, E>,
             idSelector: (I) -> String
-        ): InMemoryBox<I, E> = InMemoryBox(mapper, idSelector)
+        ): InMemoryBoxEngine<I, E> = InMemoryBoxEngine(mapper, idSelector)
     }
 }

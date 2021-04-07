@@ -7,14 +7,14 @@ import at.shockbytes.warehouse.IdentityMapper
 import at.shockbytes.warehouse.R
 import at.shockbytes.warehouse.Warehouse
 import at.shockbytes.warehouse.WarehouseConfiguration
-import at.shockbytes.warehouse.box.file.FileBox
-import at.shockbytes.warehouse.box.file.GsonFileSerializer
-import at.shockbytes.warehouse.box.memory.InMemoryBox
-import at.shockbytes.warehouse.box.log.LogBox
-import at.shockbytes.warehouse.realm.RealmBox
+import at.shockbytes.warehouse.box.Box
+import at.shockbytes.warehouse.box.memory.InMemoryBoxEngine
+import at.shockbytes.warehouse.box.log.LogBoxEngine
+import at.shockbytes.warehouse.firebase.FirebaseBoxEngine
+import at.shockbytes.warehouse.ledger.Ledger
+import at.shockbytes.warehouse.realm.RealmBoxEngine
 import at.shockbytes.warehouse.sample.realm.RealmMessageMapper
-import at.shockbytes.warehouse.truck.BatchTruck
-import at.shockbytes.warehouse.truck.SingleCargoTruck
+import com.google.firebase.database.FirebaseDatabase
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.addTo
 import io.realm.Realm
@@ -43,35 +43,39 @@ class MainActivity : AppCompatActivity() {
         Timber.plant(Timber.DebugTree())
         Realm.init(this)
 
+        val sharedLedger = Ledger.inMemory<Message>()
+
         warehouse = Warehouse(
             boxes = listOf(
-                LogBox.withTag("LogBox"),
-                RealmBox.fromRealm(config, mapper = RealmMessageMapper, idProperty = "id", idSelector = { it.id }),
-                InMemoryBox.default(),
-                FileBox.fromContext(
-                    applicationContext,
-                    fileName = "filename.json",
-                    mapper = IdentityMapper(),
-                    idSelector = { it.id },
-                    fileSerializer = GsonFileSerializer()
+                Box(
+                    LogBoxEngine.withTag("LogBox"),
+                    sharedLedger
+                ),
+                Box(
+                    RealmBoxEngine.fromRealm(
+                        config,
+                        mapper = RealmMessageMapper,
+                        idProperty = "id",
+                        idSelector = { it.id }
+                    ),
+                    sharedLedger
+                ),
+                Box(
+                    InMemoryBoxEngine.default(),
+                    sharedLedger
+                ),
+                Box(
+                    FirebaseBoxEngine.fromDatabase(
+                        FirebaseDatabase.getInstance().reference.database,
+                        reference = "/messages",
+                        idSelector = { it.id },
+                        cancelHandler = { error -> Timber.e(error.toException()) },
+                        mapper = IdentityMapper()
+                    ),
+                    sharedLedger
                 )
-                /*
-                FirebaseBox.fromDatabase(
-                    FirebaseDatabase.getInstance().reference.database,
-                    reference = "/messages",
-                    idSelector = { it.id }
-                )
-                 */
             ),
-            trucks = listOf(
-                SingleCargoTruck { message ->
-                    showToast(message.toString())
-                },
-                BatchTruck(batchSize = 2) { messages ->
-                    showToast("$messages ready to be processed!")
-                }
-            ),
-            WarehouseConfiguration(leaderBox = InMemoryBox.NAME)
+            WarehouseConfiguration(leaderBox = InMemoryBoxEngine.NAME)
         )
 
         store {
@@ -108,7 +112,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun getAll() {
 
-        warehouse.getAllFor<RealmBox<*, Message>>()
+        warehouse.getAll()
             .subscribe({ messages ->
                 Timber.e("Get all!")
                 Timber.e(messages.toString())
@@ -116,16 +120,6 @@ class MainActivity : AppCompatActivity() {
                 Timber.e(throwable)
             })
             .addTo(compositeDisposable)
-
-        // warehouse.getAllForClass(RealmBox::class.java)
-
-        /*
-        warehouse.getAll { box ->
-            box is RealmBox<*, *>
-        }
-        */
-
-        // warehouse.getAll()
     }
 
     private fun getSingleElementForId(id: String) {

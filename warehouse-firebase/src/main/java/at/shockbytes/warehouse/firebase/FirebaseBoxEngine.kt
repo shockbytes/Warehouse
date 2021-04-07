@@ -1,7 +1,7 @@
 package at.shockbytes.warehouse.firebase
 
 import at.shockbytes.warehouse.Mapper
-import at.shockbytes.warehouse.box.Box
+import at.shockbytes.warehouse.box.BoxEngine
 import at.shockbytes.warehouse.rules.BetaBox
 import at.shockbytes.warehouse.util.completableOf
 import com.google.firebase.database.DatabaseError
@@ -12,14 +12,14 @@ import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.subjects.BehaviorSubject
 
 @BetaBox
-class FirebaseBox<I, E> protected constructor(
+class FirebaseBoxEngine<I, E> protected constructor(
     private val database: FirebaseDatabase,
     private val reference: String,
-    mapper: Mapper<I, E>,
+    private val mapper: Mapper<I, E>,
     clazz: Class<I>,
-    idSelector: (I) -> String,
+    private val idSelector: (I) -> String,
     cancelHandler: ((DatabaseError) -> Unit)?
-) : Box<I, E>(mapper, idSelector) {
+) : BoxEngine<I, E> {
 
     private val subject = BehaviorSubject.create<List<I>>()
 
@@ -73,8 +73,8 @@ class FirebaseBox<I, E> protected constructor(
             mapper: Mapper<I, E>,
             noinline idSelector: (I) -> String,
             noinline cancelHandler: ((DatabaseError) -> Unit)? = null
-        ): FirebaseBox<I, E> {
-            return FirebaseBox(
+        ): FirebaseBoxEngine<I, E> {
+            return FirebaseBoxEngine(
                 database,
                 reference,
                 mapper,

@@ -1,19 +1,16 @@
 package at.shockbytes.warehouse.box.log
 
 import android.util.Log
-import at.shockbytes.warehouse.IdentityMapper
-import at.shockbytes.warehouse.Mapper
 import at.shockbytes.warehouse.box.Box
+import at.shockbytes.warehouse.box.BoxEngine
 import at.shockbytes.warehouse.util.completableOf
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 
-class LogBox<I, E> private constructor(
-    private val tag: String,
-    mapper: Mapper<I, E>,
-    idSelector: (I) -> String
-) : Box<I, E>(mapper, idSelector) {
+class LogBoxEngine<I, E> private constructor(
+    private val tag: String
+) : BoxEngine<I, E> {
 
     override val name: String = "log-android"
 
@@ -48,8 +45,8 @@ class LogBox<I, E> private constructor(
 
     companion object {
 
-        fun <E> default(): LogBox<E, E> = LogBox(DEFAULT_TAG, IdentityMapper()) { "" }
-        fun <E> withTag(tag: String): LogBox<E, E> = LogBox(tag, IdentityMapper()) { "" }
+        fun <E> default(): LogBoxEngine<E, E> = LogBoxEngine(DEFAULT_TAG)
+        fun <E> withTag(tag: String): LogBoxEngine<E, E> = LogBoxEngine(tag)
 
         private const val DEFAULT_TAG = "LogBox"
     }

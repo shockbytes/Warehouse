@@ -37,7 +37,7 @@ dependencies {
     // TODO Check if this has to be in app module
     lintChecks project(path: ':warehouse-rules')
     api project(path: ':warehouse-rules')
-    api "androidx.annotation:annotation:1.1.0"
+    api "androidx.annotation:annotation:1.2.0"
 
 
     implementation 'com.google.code.gson:gson:2.8.6'
@@ -47,6 +47,7 @@ dependencies {
     api 'io.reactivex.rxjava3:rxjava:3.0.7'
     api 'io.reactivex.rxjava3:rxandroid:3.0.0'
     api 'io.reactivex.rxjava3:rxkotlin:3.0.1'
+    implementation (group: 'commons-codec', name: 'commons-codec', version: '1.11')
 
     testImplementation 'junit:junit:4.13.1'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'

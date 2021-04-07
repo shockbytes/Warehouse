@@ -1,6 +1,7 @@
 package at.shockbytes.warehouse
 
 import at.shockbytes.warehouse.box.Box
+import at.shockbytes.warehouse.sync.BoxSync
 import at.shockbytes.warehouse.truck.Truck
 import at.shockbytes.warehouse.util.completableOf
 import at.shockbytes.warehouse.util.merge
@@ -8,38 +9,21 @@ import at.shockbytes.warehouse.util.toObservableFromIterable
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
 
+/**
+* - Box uses BoxEngine
+* - Box uses Ledger which is a blockchain that stores all new Operations in a file
+* - BoxSync uses Ledger to determine which Operations are delta
+* - Take these delta operations and apply it to unsynced box
+ */
 class Warehouse<E>(
-    private val boxes: List<Box<*, E>>,
-    private val trucks: List<Truck<E>> = listOf(),
-    // TODO Incorporate config
+    private val boxes: List<Box<E>>,
     private val config: WarehouseConfiguration = WarehouseConfiguration()
 ) {
 
+    private val boxSync: BoxSync<E> = BoxSync(config.leaderBox!!, boxes)
+
     init {
-        syncLeader()
-    }
-
-    // TODO Use dedicated `BoxSync` class for this
-    private fun syncLeader() {
-        findLeaderFromConfig()
-            ?.let(::syncBoxesWithLeaders)
-    }
-
-    private fun findLeaderFromConfig(): Box<*, E>? {
-        return config.leaderBox
-            ?.let { leaderBoxName ->
-                boxes.find { it.name == leaderBoxName }
-            }
-    }
-
-    private fun syncBoxesWithLeaders(leader: Box<*, E>) {
-        boxes.toMutableSet()
-            .apply {
-                remove(leader)
-            }
-            .forEach { follower ->
-                follower.syncWith(leader)
-            }
+        boxSync.sync()
     }
 
     /**
@@ -47,21 +31,11 @@ class Warehouse<E>(
      */
     fun store(
         value: E,
-        writePredicate: (Box<*, E>) -> Boolean = { true }
+        writePredicate: (Box<E>) -> Boolean = { true }
     ): Completable {
         return performCompletableWriteBoxAction(writePredicate) { box ->
             box.store(value)
-        }.andThen(updateTrucks(value))
-    }
-
-    private fun updateTrucks(value: E): Completable {
-        return trucks
-            .map { truck ->
-                completableOf {
-                    truck.loadCargo(value)
-                }
-            }
-            .merge()
+        }
     }
 
     /**
@@ -69,7 +43,7 @@ class Warehouse<E>(
      */
     fun update(
         value: E,
-        writePredicate: (Box<*, E>) -> Boolean = { true },
+        writePredicate: (Box<E>) -> Boolean = { true },
     ): Completable {
         return performCompletableWriteBoxAction(writePredicate) { box ->
             box.update(value)
@@ -81,7 +55,7 @@ class Warehouse<E>(
      */
     fun delete(
         value: E,
-        writePredicate: (Box<*, E>) -> Boolean = { true },
+        writePredicate: (Box<E>) -> Boolean = { true },
     ): Completable {
         return performCompletableWriteBoxAction(writePredicate) { box ->
             box.delete(value)
@@ -89,8 +63,8 @@ class Warehouse<E>(
     }
 
     private fun performCompletableWriteBoxAction(
-        writePredicate: (Box<*, E>) -> Boolean,
-        action: (Box<*, E>) -> Completable
+        writePredicate: (Box<E>) -> Boolean,
+        action: (Box<E>) -> Completable
     ): Completable {
         return boxes
             .filter(writePredicate)
@@ -103,7 +77,7 @@ class Warehouse<E>(
      */
     operator fun get(
         id: String,
-        readPredicate: (Box<*, E>) -> Boolean = { true },
+        readPredicate: (Box<E>) -> Boolean = { true },
     ): Observable<List<E>> {
         return boxes
             .filter(readPredicate)
@@ -116,32 +90,19 @@ class Warehouse<E>(
             .toObservable()
     }
 
-    // TODO Rethink getAll method...
-
-    // TODO Public Api?
-    inline fun <reified K : Box<*, E>> getAllFor(): Observable<List<E>> {
-        return getAllForClass(K::class.java)
-    }
-
-    // TODO Public Api?
-    fun <K : Box<*, E>> getAllForClass(c: Class<K>): Observable<List<E>> {
-        return boxes.filterIsInstance(c).first().getAll()
-    }
-
     /**
      * Public API
      */
-    fun getAll(
-        readPredicate: (Box<*, E>) -> Boolean = { true }
-    ): Observable<List<E>> {
+    fun getAll(): Observable<List<E>> {
+        val readPredicate: (Box<E>) -> Boolean = {box -> box.name == config.leaderBox }
         return performObservableReadBoxAction(readPredicate) { box ->
             box.getAll()
         }
     }
 
     private fun performObservableReadBoxAction(
-        readPredicate: (Box<*, E>) -> Boolean,
-        action: (Box<*, E>) -> Observable<List<E>>
+        readPredicate: (Box<E>) -> Boolean,
+        action: (Box<E>) -> Observable<List<E>>
     ): Observable<List<E>> {
         return boxes
             .filter(readPredicate)

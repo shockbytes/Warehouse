@@ -1,32 +1,50 @@
 package at.shockbytes.warehouse.box
 
-import at.shockbytes.warehouse.Mapper
+import at.shockbytes.warehouse.ledger.BoxOperation
+import at.shockbytes.warehouse.ledger.Ledger
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 
-abstract class Box<I, E>(
-    protected val mapper: Mapper<I, E>,
-    protected val idSelector: (I) -> String
+class Box<E>(
+    private val boxEngine: BoxEngine<*, E>,
+    private val ledger: Ledger<E>
 ) {
 
-    abstract val name: String
+    val name: String
+        get() = boxEngine.name
 
     operator fun get(id: String): Single<E> {
         return getSingleElement(id)
     }
 
-    abstract fun getSingleElement(id: String): Single<E>
+    fun getSingleElement(id: String): Single<E> = boxEngine.getSingleElement(id)
 
-    abstract fun getAll(): Observable<List<E>>
+    fun getAll(): Observable<List<E>> = boxEngine.getAll()
 
-    abstract fun store(value: E): Completable
+    fun store(value: E): Completable {
+        return boxEngine.store(value)
+            .doOnComplete {
+                ledger.storeOperation(BoxOperation.StoreOperation(value))
+            }
+    }
 
-    abstract fun update(value: E): Completable
+    fun update(value: E): Completable {
+        return boxEngine.update(value)
+            .doOnComplete {
+                ledger.storeOperation(BoxOperation.UpdateOperation(value))
+            }
+    }
 
-    abstract fun delete(value: E): Completable
+    fun delete(value: E): Completable {
+        return boxEngine.delete(value)
+            .doOnComplete {
+                ledger.storeOperation(BoxOperation.DeleteOperation(value))
+            }
+    }
 
-    fun syncWith(leader: Box<*, E>): Completable {
-        TODO("Implement sync mechanism!")
+    fun syncWith(leader: Box<E>): Completable {
+        // TODO Implement this method
+        return Completable.complete()
     }
 }
