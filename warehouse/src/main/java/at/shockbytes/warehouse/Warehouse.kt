@@ -4,24 +4,19 @@ import at.shockbytes.warehouse.box.Box
 import at.shockbytes.warehouse.ledger.BoxOperation
 import at.shockbytes.warehouse.ledger.Ledger
 import at.shockbytes.warehouse.sync.BoxSync
+import at.shockbytes.warehouse.util.asCompletable
 import at.shockbytes.warehouse.util.merge
 import at.shockbytes.warehouse.util.toObservableFromIterable
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
 
-/**
-* - Box uses BoxEngine
-* - Box uses Ledger which is a blockchain that stores all new Operations in a file
-* - BoxSync uses Ledger to determine which Operations are delta
-* - Take these delta operations and apply it to unsynced box
- */
 class Warehouse<E>(
     private val boxes: List<Box<E>>,
     private val ledger: Ledger<E>,
-    private val config: WarehouseConfiguration = WarehouseConfiguration()
+    private val config: WarehouseConfiguration
 ) {
 
-    private val boxSync: BoxSync<E> = BoxSync(config.leaderBox!!, boxes)
+    private val boxSync: BoxSync<E> = BoxSync(config.leaderBox, boxes)
 
     init {
         boxSync.sync()
@@ -36,7 +31,10 @@ class Warehouse<E>(
     ): Completable {
         return performCompletableWriteBoxAction(writePredicate) { box ->
             box.store(value)
-        }.andThen(ledger.storeOperation(BoxOperation.StoreOperation(value)))
+                .andThen(ledger.storeOperation(BoxOperation.StoreOperation(value)))
+                .doOnSuccess(box::updateHash)
+                .asCompletable()
+        }
     }
 
     /**
@@ -48,7 +46,10 @@ class Warehouse<E>(
     ): Completable {
         return performCompletableWriteBoxAction(writePredicate) { box ->
             box.update(value)
-        }.andThen(ledger.storeOperation(BoxOperation.UpdateOperation(value)))
+                .andThen(ledger.storeOperation(BoxOperation.UpdateOperation(value)))
+                .doOnSuccess(box::updateHash)
+                .asCompletable()
+        }
     }
 
     /**
@@ -60,7 +61,10 @@ class Warehouse<E>(
     ): Completable {
         return performCompletableWriteBoxAction(writePredicate) { box ->
             box.delete(value)
-        }.andThen(ledger.storeOperation(BoxOperation.DeleteOperation(value)))
+                .andThen(ledger.storeOperation(BoxOperation.DeleteOperation(value)))
+                .doOnSuccess(box::updateHash)
+                .asCompletable()
+        }
     }
 
     private fun performCompletableWriteBoxAction(

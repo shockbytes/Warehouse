@@ -4,5 +4,5 @@ import at.shockbytes.warehouse.atomic.AtomicityMode
 
 data class WarehouseConfiguration(
     val atomicityMode: AtomicityMode = AtomicityMode.NONE,
-    val leaderBox: String? = null
+    val leaderBox: String
 )

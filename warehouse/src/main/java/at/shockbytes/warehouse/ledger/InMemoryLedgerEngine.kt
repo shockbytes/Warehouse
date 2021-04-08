@@ -1,6 +1,5 @@
 package at.shockbytes.warehouse.ledger
 
-import at.shockbytes.warehouse.util.completableOf
 import at.shockbytes.warehouse.util.singleOf
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Single

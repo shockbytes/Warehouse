@@ -1,6 +1,5 @@
 package at.shockbytes.warehouse.ledger
 
-import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.subjects.PublishSubject
@@ -13,24 +12,28 @@ class Ledger<E> private constructor(
 
     fun onLedgerEvents(): Observable<LedgerBlock<E>> = ledgerEventSource
 
-    fun storeOperation(operation: BoxOperation<E>): Completable {
+    fun storeOperation(operation: BoxOperation<E>): Single<Hash> {
         return ledgerEngine.store(operation)
             .doOnComplete {
                 ledgerEventSource.onNext(ledgerEngine.last)
             }
+            .toSingle {
+                Hash(ledgerEngine.last.hash)
+            }
     }
 
-    fun getEntriesSince(hash: String): Single<List<LedgerBlock<E>>> {
+    fun allOperations(): Single<List<LedgerBlock<E>>> = ledgerEngine.entries()
+
+    fun operationsSince(hash: String): Single<List<LedgerBlock<E>>> {
         return ledgerEngine.entries()
             .map { entries ->
-                // TODO This can be optimized
+
                 val index = entries.indexOfFirst { block ->
                     block.hash == hash
                 }
 
-                // Found
                 if (index > -1) {
-                    entries.subList(index, entries.size)
+                    entries.subList(index.inc(), entries.size)
                 } else {
                     listOf()
                 }

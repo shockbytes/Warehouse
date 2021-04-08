@@ -1,13 +1,25 @@
 package at.shockbytes.warehouse.box
 
+import at.shockbytes.warehouse.ledger.Hash
+import at.shockbytes.warehouse.state.StatePreserver
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 
-class Box<E>(private val boxEngine: BoxEngine<*, E>) {
+class Box<E>(
+    private val boxEngine: BoxEngine<*, E>,
+    private val statePreserver: StatePreserver
+    ) {
 
     val name: String
         get() = boxEngine.name
+
+    val currentState: Hash
+        get() = statePreserver.getCurrentState()
+
+    fun updateHash(hash: Hash) {
+        statePreserver.updateHash(hash)
+    }
 
     operator fun get(id: String): Single<E> {
         return getSingleElement(id)

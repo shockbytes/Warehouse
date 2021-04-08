@@ -5,11 +5,8 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.LinearLayoutCompat
-import androidx.core.view.size
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.viewpager.widget.ViewPager
 import at.shockbytes.warehouse.IdentityMapper
 import at.shockbytes.warehouse.R
 import at.shockbytes.warehouse.Warehouse
@@ -21,7 +18,7 @@ import at.shockbytes.warehouse.firebase.FirebaseBoxEngine
 import at.shockbytes.warehouse.ledger.Ledger
 import at.shockbytes.warehouse.realm.RealmBoxEngine
 import at.shockbytes.warehouse.sample.realm.RealmMessageMapper
-import com.google.android.material.tabs.TabLayout
+import at.shockbytes.warehouse.state.InMemoryStatePreserver
 import com.google.firebase.database.FirebaseDatabase
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.addTo
@@ -66,6 +63,7 @@ class MainActivity : AppCompatActivity() {
             boxes = listOf(
                 Box(
                     LogBoxEngine.withTag("LogBox"),
+                    InMemoryStatePreserver()
                 ),
                 Box(
                     RealmBoxEngine.fromRealm(
@@ -74,9 +72,11 @@ class MainActivity : AppCompatActivity() {
                         idProperty = "id",
                         idSelector = { it.id }
                     ),
+                    InMemoryStatePreserver()
                 ),
                 Box(
                     InMemoryBoxEngine.default(),
+                    InMemoryStatePreserver()
                 ),
                 Box(
                     FirebaseBoxEngine.fromDatabase(
@@ -86,6 +86,7 @@ class MainActivity : AppCompatActivity() {
                         cancelHandler = { error -> Timber.e(error.toException()) },
                         mapper = IdentityMapper()
                     ),
+                    InMemoryStatePreserver()
                 )
             ),
             sharedLedger,

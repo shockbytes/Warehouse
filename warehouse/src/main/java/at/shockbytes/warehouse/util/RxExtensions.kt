@@ -12,6 +12,8 @@ fun <T> List<T>.toObservableFromIterable(): Observable<T> = Observable.fromItera
 
 fun <T> Observable<T>.asCompletable(): Completable = Completable.fromObservable(this)
 
+fun <T> Single<T>.asCompletable(): Completable = Completable.fromSingle(this)
+
 fun <T> singleOf(
     action: () -> T
 ): Single<T> {
