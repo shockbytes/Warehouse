@@ -18,13 +18,13 @@ class Ledger<E> private constructor(
                 ledgerEventSource.onNext(ledgerEngine.last)
             }
             .toSingle {
-                Hash(ledgerEngine.last.hash)
+                ledgerEngine.last.hash
             }
     }
 
     fun allOperations(): Single<List<LedgerBlock<E>>> = ledgerEngine.entries()
 
-    fun operationsSince(hash: String): Single<List<LedgerBlock<E>>> {
+    fun operationsSince(hash: Hash): Single<List<LedgerBlock<E>>> {
         return ledgerEngine.entries()
             .map { entries ->
 
@@ -35,7 +35,8 @@ class Ledger<E> private constructor(
                 if (index > -1) {
                     entries.subList(index.inc(), entries.size)
                 } else {
-                    listOf()
+                    // If not found, return everything because nothing is stored
+                    entries
                 }
             }
     }

@@ -7,6 +7,6 @@ data class LedgerBlock<E>(
     val data: BoxOperation<E>,
 ) {
 
-    val hash: String = DigestUtils.sha256Hex((previousHash + data).toByteArray())
+    val hash: Hash = Hash(DigestUtils.sha256Hex((previousHash + data).toByteArray()))
 }
 

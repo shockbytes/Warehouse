@@ -1,10 +1,12 @@
 package at.shockbytes.warehouse.box
 
+import at.shockbytes.warehouse.ledger.BoxOperation
 import at.shockbytes.warehouse.ledger.Hash
 import at.shockbytes.warehouse.state.StatePreserver
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
+import io.reactivex.rxjava3.kotlin.concatAll
 
 class Box<E>(
     private val boxEngine: BoxEngine<*, E>,
@@ -41,8 +43,11 @@ class Box<E>(
         return boxEngine.delete(value)
     }
 
-    fun syncWith(leader: Box<E>): Completable {
-        // TODO Implement this method
-        return Completable.complete()
+    fun syncOperations(operations: List<BoxOperation<E>>): Completable {
+        return operations
+            .map { operation ->
+                operation.perform(this)
+            }
+            .concatAll()
     }
 }

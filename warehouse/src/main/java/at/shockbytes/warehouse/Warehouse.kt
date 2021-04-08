@@ -19,7 +19,7 @@ class Warehouse<E>(
     private val boxSync: BoxSync<E> = BoxSync(config.leaderBox, boxes)
 
     init {
-        boxSync.sync()
+        boxSync.syncWithLedger(ledger).blockingAwait() // TODO Not nice
     }
 
     /**

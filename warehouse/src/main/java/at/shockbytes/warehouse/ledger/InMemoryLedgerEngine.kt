@@ -12,7 +12,7 @@ class InMemoryLedgerEngine<E> : LedgerEngine<E> {
         get() = chain.last()
 
     private val lastHash: String
-        get() = last.hash
+        get() = last.hash.value
 
     init {
         chain.add(LedgerBlock("", BoxOperation.InitOperation()))
