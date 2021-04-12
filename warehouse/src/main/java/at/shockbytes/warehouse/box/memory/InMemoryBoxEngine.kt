@@ -2,8 +2,8 @@ package at.shockbytes.warehouse.box.memory
 
 import at.shockbytes.warehouse.IdentityMapper
 import at.shockbytes.warehouse.Mapper
-import at.shockbytes.warehouse.box.Box
 import at.shockbytes.warehouse.box.BoxEngine
+import at.shockbytes.warehouse.box.BoxId
 import at.shockbytes.warehouse.util.asObservable
 import at.shockbytes.warehouse.util.completableOf
 import at.shockbytes.warehouse.util.indexOfFirstOrNull
@@ -15,7 +15,7 @@ import java.lang.IllegalStateException
 class InMemoryBoxEngine<I, E> private constructor(
     private val mapper: Mapper<I, E>,
     private val idSelector: (I) -> String,
-    override val name: String = NAME
+    override val id: BoxId = BoxId.of(NAME)
 ) : BoxEngine<I, E> {
 
     private val storage: MutableList<I> = mutableListOf()
@@ -24,7 +24,7 @@ class InMemoryBoxEngine<I, E> private constructor(
         return storage
             .find { value -> idSelector(value) == id }
             ?.let { internal -> Single.just(mapper.mapTo(internal)) }
-            ?: Single.error(IllegalStateException("No value stored in $name for id $id"))
+            ?: Single.error(IllegalStateException("No value stored in ${this.id} for id $id"))
     }
 
     override fun getAll(): Observable<List<E>> {
@@ -50,7 +50,7 @@ class InMemoryBoxEngine<I, E> private constructor(
                     storage[index] = mapper.mapFrom(value)
                 }
                 ?: throw IllegalStateException(
-                    "No value stored in $name for updating id ${idSelector(mapper.mapFrom(value))}"
+                    "No value stored in $id for updating id ${idSelector(mapper.mapFrom(value))}"
                 )
         }
     }
@@ -65,8 +65,14 @@ class InMemoryBoxEngine<I, E> private constructor(
                     storage.removeAt(index)
                 }
                 ?: throw IllegalStateException(
-                    "No value stored in $name for deleting id ${idSelector(mapper.mapFrom(value))}"
+                    "No value stored in $id for deleting id ${idSelector(mapper.mapFrom(value))}"
                 )
+        }
+    }
+
+    override fun reset(): Completable {
+        return completableOf {
+            storage.clear()
         }
     }
 
@@ -82,6 +88,6 @@ class InMemoryBoxEngine<I, E> private constructor(
             name: String,
             mapper: Mapper<I, E>,
             idSelector: (I) -> String
-        ): InMemoryBoxEngine<I, E> = InMemoryBoxEngine(mapper, idSelector, name)
+        ): InMemoryBoxEngine<I, E> = InMemoryBoxEngine(mapper, idSelector, BoxId.of(name))
     }
 }

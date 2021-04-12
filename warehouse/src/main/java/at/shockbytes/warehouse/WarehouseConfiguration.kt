@@ -1,8 +1,8 @@
 package at.shockbytes.warehouse
 
-import at.shockbytes.warehouse.atomic.AtomicityMode
+import at.shockbytes.warehouse.box.BoxId
+
 
 data class WarehouseConfiguration(
-    val atomicityMode: AtomicityMode = AtomicityMode.NONE,
-    val leaderBox: String
+    val leaderBoxId: BoxId
 )

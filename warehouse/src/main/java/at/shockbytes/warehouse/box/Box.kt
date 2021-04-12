@@ -10,11 +10,12 @@ import io.reactivex.rxjava3.kotlin.concatAll
 
 class Box<E>(
     private val boxEngine: BoxEngine<*, E>,
-    private val statePreserver: StatePreserver
-    ) {
+    private val statePreserver: StatePreserver,
+    var isEnabled: Boolean = true
+) {
 
-    val name: String
-        get() = boxEngine.name
+    val id: BoxId
+        get() = boxEngine.id
 
     val currentState: Hash
         get() = statePreserver.getCurrentState()
@@ -41,6 +42,10 @@ class Box<E>(
 
     fun delete(value: E): Completable {
         return boxEngine.delete(value)
+    }
+
+    fun reset(): Completable {
+        return boxEngine.reset()
     }
 
     fun syncOperations(operations: List<BoxOperation<E>>): Completable {

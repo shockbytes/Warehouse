@@ -21,7 +21,7 @@ class BoxViewPagerAdapter(
     }
 
     override fun getPageTitle(position: Int): CharSequence {
-        return boxes[position].name
+        return boxes[position].id.value
     }
 
 }

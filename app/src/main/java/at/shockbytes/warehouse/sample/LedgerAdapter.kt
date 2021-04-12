@@ -35,7 +35,7 @@ class LedgerAdapter(
             with(data) {
                 itemView.findViewById<TextView>(R.id.tv_ledger_content).text = this.data.toString()
                 itemView.findViewById<TextView>(R.id.tv_ledger_previousHash).text = this.previousHash
-                itemView.findViewById<TextView>(R.id.tv_ledger_currentHash).text = this.hash
+                itemView.findViewById<TextView>(R.id.tv_ledger_currentHash).text = this.hash.value
             }
         }
     }

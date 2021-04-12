@@ -1,6 +1,7 @@
 package at.shockbytes.warehouse
 
 import at.shockbytes.warehouse.box.Box
+import at.shockbytes.warehouse.box.BoxId
 import at.shockbytes.warehouse.box.memory.InMemoryBoxEngine
 import at.shockbytes.warehouse.ledger.BoxOperation
 import at.shockbytes.warehouse.ledger.Ledger
@@ -41,7 +42,7 @@ class BoxSyncTest {
         val boxes = listOf(leader, follower)
 
         val boxSync = BoxSync(
-            "in-memory.1",
+            BoxId.of("in-memory.1"),
             boxes
         )
 

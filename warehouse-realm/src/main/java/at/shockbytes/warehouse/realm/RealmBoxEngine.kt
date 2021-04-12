@@ -2,6 +2,7 @@ package at.shockbytes.warehouse.realm
 
 import at.shockbytes.warehouse.Mapper
 import at.shockbytes.warehouse.box.BoxEngine
+import at.shockbytes.warehouse.box.BoxId
 import at.shockbytes.warehouse.rules.BetaBox
 import at.shockbytes.warehouse.util.completableOf
 import hu.akarnokd.rxjava3.bridge.RxJavaBridge
@@ -27,7 +28,7 @@ class RealmBoxEngine<I : RealmObject, E> protected constructor(
     private val idSelector: (I) -> String,
 ) : BoxEngine<I, E> {
 
-    override val name: String = NAME
+    override val id: BoxId = BoxId.of(NAME)
 
     override fun getSingleElement(id: String): Single<E> {
         return Single.fromCallable {
@@ -35,7 +36,7 @@ class RealmBoxEngine<I : RealmObject, E> protected constructor(
                 .equalTo(idProperty, id)
                 .findFirst()
                 ?.let(mapper::mapTo)
-                ?: throw IllegalStateException("No value stored in $name for id $id")
+                ?: throw IllegalStateException("No value stored in ${this.id} for id $id")
         }
     }
 
@@ -81,6 +82,15 @@ class RealmBoxEngine<I : RealmObject, E> protected constructor(
                     .equalTo(idProperty, idSelector(mapper.mapFrom(value)))
                     .findFirst()
                     ?.deleteFromRealm()
+            }
+        }
+    }
+
+
+    override fun reset(): Completable {
+        return completableOf {
+            realm.executeTransaction { realm ->
+                realm.deleteAll()
             }
         }
     }

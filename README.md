@@ -1,33 +1,40 @@
 # Warehouse (Pre-Alpha / :construction:  Under construction :construction:)
 ####  Important: This library is pre-alpha and far from production-ready. However, if you like the idea, feel free to open an issue or contribute a PR.
 
-## Warehouse, Boxes & Trucks
+## Warehouse, Boxes & Trucks - The concepts
 
+TODO Update entities
+
+![Warehouse entities](docs/warehouse_entities.png)
+
+### Warehouse
 Warehouse is an Android library that simplifies object storage, more specifically, storing a collection
 of objects. If you have to store a list of books, or a collection of incoming orders, `Warehouse` will help
 you with this task. But there's more to that. `Warehouse` allows you to specify in which `Boxes` the
-data should be stored. `Boxes` are an abstraction for data storage backends. There are already some `Box` implementations
+data should be stored.
+
+### Boxes
+`Boxes` are an abstraction for data storage backends. There are already some `Box` implementations
 ready for usage, such as `FirebaseBox`, `RealmBox` or `FileBox`, storing your data in your storage backend
 of choice (Check out the [Supported Boxes](#supported-boxes) section). This allows you to store the same data in different
 backends without doing all the synchronization between the backends by yourself. Notice that you can always
 implement your own `Box`.
 
+### Trucks
 Additionally, there's the concept of `Trucks`. `Trucks` take care of incoming goods. In the concrete case,
 a `Truck` receives updates of newly added data into the `Warehouse` and can operate on the incoming data.
 `Trucks` can be seen as a nice way to perform some side-effects while storing data. You could track an event,
 or compute some extra metrics of the stored data.
 
-![Warehouse entities](docs/warehouse_entities.png)
-
 ### Project origin
 The project emerged of the dire need of an abstraction layer handling multiple data backends. All the
 data was stored locally in a `Realm` Database. Adding a remote storage option like `Firebase` would be
 easy to implement, only requiring an initial data migration. However, users should be able to opt-in for
-online storage. Users should have full control where their data is stored. Thus, data should always
+online storage. Users should remain of full control where their data is stored. Thus, data should always
 be stored in one "leading" data backend, adding and removing additional data backends on demand.
 This was the date of birth of the idea of `Warehouse`.
 
-# Features
+## Features
 
 ### Multi data backend management
 Adding and removing data backends on demand. Data backends are called `Boxes`. A `Box`
@@ -39,11 +46,14 @@ This feature allows to add `Boxes` at any point in time, populating it with prev
 stored data from the "leading" box.
 
 ### Leading Box
-A `Warehouse` can have an optional "leading box", which will be the single source of truth,
+A `Warehouse` has a "leading box", which will be the single source of truth,
 in cases where conflicts may happen. For example, a local `Realm` database could be the "leading box",  
 while having a custom REST data backend implementation (which relies on a network connection).
 
 This is an optional feature and can be configured via the `WarehouseConfiguration`.
+
+### BoxOperation Ledger
+TODO Describe Ledger concept
 
 ### Internal / External data representation
 The key idea of `Warehouse` is to separate the object persistence of the rest of the code.
@@ -122,34 +132,33 @@ warehouse["id"].subscribe { messages ->
 
 ## What's missing for the first beta release?
 
-There are a bunch of things that make this library not even suitable
-for a hobby project.
+There are a bunch of things that make this library not even suitable for a hobby project.
 
 ### General issues
-- Test coverage
-- Working linting rules (warehouse-rules) module
+-[ ] Test coverage
 
 ### Box issues
-- Make Box an abstract class rather than an interface
-- Initial box synchronization (with Lint warning if content is not a data class)
-- FileBox implementation
-- SQLiteBox implementation
-- A working RealmBox implementation
+-[ ] Initial box synchronization
+-[ ] A working RealmBox implementation
+
+### BoxEngine issues
+-[ ] `idSelector` can handle any data type as `id`, not only string
 
 ### Warehouse issues
-- Final Warehouse API
-- `idSelector` can handle any data type as `id`
-- READ/WRITE atomicity
-- Dynamically add boxes
+-[ ] Final Warehouse API
+-[ ] Reset boxes
+-[ ] Enable/Disable boxes on the go
+-[ ] Switch leading boxes on the go
 
-### Supported Boxes
+### Supported BoxEngines
+
 |   **Supported**   |    **Planned**     |    **Potential**     |
 |:-----------------:|:------------------:|:--------------------:|
 |    Log (Debug)    | Firebase FireStore |         Room         |
 |     InMemory      |       SQLite       |    ProtoDataStore    |
 |       Realm       | SharedPreferences  | PreferencesDataStore |
-| Firebase Database |                    |    Remote / REST     |
-|   Android File    |                    |                      |
+| Firebase Database |    Android File    |    Remote / REST     |
+|                   |                    |                      |
 
 #### Why is Room only considered "potential"?
 Room provides way more than just a "data backend", providing more features than just
@@ -159,6 +168,10 @@ of developers, which will be mitigated from `Warehouse` to them. Overall, there 
 lot of pitfalls and edge cases, which make `Room` not a prime candidate for a `Box`
 implementation. Alternatively, if a relational database is required,
 a `SQLiteBox` implementation is planned.
+
+## Warehouse 1.0 Requirements
+- Working linting rules (warehouse-rules module) module (e.g. warning if content is not a data class)
+- Box-independent query language on top of boxes and a single `warehouse.query()` method.
 
 ## Warehouse 2.0
 
@@ -170,6 +183,6 @@ it should be possible to use Coroutines/Flow instead of solely relying on RxJava
 
 ### Proposed V2.0 changes
 - A single `Warehouse` can store an arbitrary amount of different data types, not just a single one.
-- Box-independent query language on top of boxes and a single `warehouse.query()` method.
 - Each box has an own Log and allows rollbacks to previous versions
 - WarehouseAdapter (like Retrofit) to use either Flow/Coroutines or RxJava
+- READ/WRITE atomicity

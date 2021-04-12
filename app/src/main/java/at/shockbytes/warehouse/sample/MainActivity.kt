@@ -9,9 +9,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import at.shockbytes.warehouse.IdentityMapper
 import at.shockbytes.warehouse.R
-import at.shockbytes.warehouse.Warehouse
 import at.shockbytes.warehouse.WarehouseConfiguration
+import at.shockbytes.warehouse.Warehouse
 import at.shockbytes.warehouse.box.Box
+import at.shockbytes.warehouse.box.BoxId
 import at.shockbytes.warehouse.box.memory.InMemoryBoxEngine
 import at.shockbytes.warehouse.box.log.LogBoxEngine
 import at.shockbytes.warehouse.firebase.FirebaseBoxEngine
@@ -59,7 +60,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupWarehouse() {
         val sharedLedger = Ledger.inMemory<Message>()
-        warehouse = Warehouse(
+        warehouse = Warehouse.new(
             boxes = listOf(
                 Box(
                     LogBoxEngine.withTag("LogBox"),
@@ -90,7 +91,7 @@ class MainActivity : AppCompatActivity() {
                 )
             ),
             sharedLedger,
-            WarehouseConfiguration(leaderBox = InMemoryBoxEngine.NAME)
+            WarehouseConfiguration(leaderBoxId = BoxId.of(InMemoryBoxEngine.NAME))
         )
 
 

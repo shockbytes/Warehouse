@@ -2,6 +2,7 @@ package at.shockbytes.warehouse.firebase
 
 import at.shockbytes.warehouse.Mapper
 import at.shockbytes.warehouse.box.BoxEngine
+import at.shockbytes.warehouse.box.BoxId
 import at.shockbytes.warehouse.rules.BetaBox
 import at.shockbytes.warehouse.util.completableOf
 import com.google.firebase.database.DatabaseError
@@ -32,7 +33,7 @@ class FirebaseBoxEngine<I, E> protected constructor(
         )
     }
 
-    override val name: String = "firebase"
+    override val id: BoxId = BoxId.of("firebase")
 
     override fun getSingleElement(id: String): Single<E> {
         return subject
@@ -40,7 +41,7 @@ class FirebaseBoxEngine<I, E> protected constructor(
                 values
                     .find { v -> id == idSelector(v) }
                     ?.let(mapper::mapTo)
-                    ?: error("There are no values in $name with id: $id")
+                    ?: error("There are no values in ${this.id} with id: $id")
             }
             .singleOrError()
     }
@@ -63,6 +64,10 @@ class FirebaseBoxEngine<I, E> protected constructor(
         return completableOf {
             database.removeChildValue(reference, idSelector(mapper.mapFrom(value)))
         }
+    }
+
+    override fun reset(): Completable {
+        TODO("Not yet implemented")
     }
 
     companion object {

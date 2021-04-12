@@ -1,8 +1,8 @@
 package at.shockbytes.warehouse.box.log
 
 import android.util.Log
-import at.shockbytes.warehouse.box.Box
 import at.shockbytes.warehouse.box.BoxEngine
+import at.shockbytes.warehouse.box.BoxId
 import at.shockbytes.warehouse.util.completableOf
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
@@ -12,7 +12,7 @@ class LogBoxEngine<I, E> private constructor(
     private val tag: String
 ) : BoxEngine<I, E> {
 
-    override val name: String = NAME
+    override val id: BoxId = BoxId.of(NAME)
 
     override fun getSingleElement(id: String): Single<E> {
         Log.d(tag, "Trying to get resource with id: $id")
@@ -20,12 +20,12 @@ class LogBoxEngine<I, E> private constructor(
     }
 
     override fun getAll(): Observable<List<E>> {
-        Log.d(tag, "Loading all messages from $name")
+        Log.d(tag, "Loading all messages from $id")
         return Observable.empty()
     }
 
     override fun store(value: E): Completable {
-        Log.e(tag, "Store $value in $name")
+        Log.e(tag, "Store $value in $id")
         return Completable.fromCallable {
             Log.d(DEFAULT_TAG, "Storing new value: $value")
         }
@@ -41,6 +41,10 @@ class LogBoxEngine<I, E> private constructor(
         return completableOf {
             Log.d(tag, "Deleting value: $value")
         }
+    }
+
+    override fun reset(): Completable {
+        return Completable.complete()
     }
 
     companion object {

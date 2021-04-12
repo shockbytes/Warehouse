@@ -6,11 +6,12 @@ import io.reactivex.rxjava3.core.Single
 
 interface BoxEngine<I, E> {
 
-    val name: String
+    val id: BoxId
 
     fun getSingleElement(id: String): Single<E>
     fun getAll(): Observable<List<E>>
     fun store(value: E): Completable
     fun update(value: E): Completable
     fun delete(value: E): Completable
+    fun reset(): Completable
 }

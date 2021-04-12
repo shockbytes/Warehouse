@@ -1,12 +1,11 @@
 package at.shockbytes.warehouse.datastore
 
 import android.content.Context
-import androidx.datastore.DataStore
-import androidx.datastore.Serializer
-import androidx.datastore.createDataStore
+import androidx.datastore.core.DataStore
+import androidx.datastore.core.Serializer
 import at.shockbytes.warehouse.Mapper
-import at.shockbytes.warehouse.box.Box
 import at.shockbytes.warehouse.box.BoxEngine
+import at.shockbytes.warehouse.box.BoxId
 import at.shockbytes.warehouse.rules.ExperimentalBox
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
@@ -28,10 +27,10 @@ class ProtoDataStoreBoxEngine<I, E>(
         dataStoreName: String,
         serializer: Serializer<I>
     ): DataStore<I> {
-        return context.createDataStore(dataStoreName, serializer)
+        TODO()
     }
 
-    override val name: String = "preferences-data-store-android"
+    override val id: BoxId = BoxId.of("preferences-data-store-android")
 
     override fun getSingleElement(id: String): Single<E> {
         TODO("Not yet implemented")
@@ -50,6 +49,10 @@ class ProtoDataStoreBoxEngine<I, E>(
     }
 
     override fun delete(value: E): Completable {
+        TODO("Not yet implemented")
+    }
+
+    override fun reset(): Completable {
         TODO("Not yet implemented")
     }
 }
