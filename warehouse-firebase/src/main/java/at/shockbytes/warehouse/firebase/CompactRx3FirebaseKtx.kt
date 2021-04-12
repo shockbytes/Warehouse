@@ -1,10 +1,12 @@
 package at.shockbytes.warehouse.firebase
 
+import com.google.android.gms.tasks.Task
 import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.subjects.Subject
 
 fun <T, K> Subject<List<T>>.fromFirebase(
@@ -80,10 +82,34 @@ fun <T> FirebaseDatabase.insertValue(
     getReference(reference).push().setValue(value)
 }
 
-fun <T> FirebaseDatabase.updateValue(reference: String, childId: String, value: T) {
-    getReference(reference).child(childId).setValue(value)
+fun <T> FirebaseDatabase.updateValue(reference: String, childId: String, value: T): Completable {
+    return getReference(reference)
+        .child(childId)
+        .setValue(value)
+        .toCompletable()
 }
 
-fun FirebaseDatabase.removeChildValue(reference: String, childId: String) {
-    getReference(reference).child(childId).removeValue()
+fun FirebaseDatabase.removeChildValue(reference: String, childId: String): Completable {
+    return getReference(reference)
+        .child(childId)
+        .removeValue()
+        .toCompletable()
+}
+
+fun FirebaseDatabase.removeReference(reference: String): Completable {
+    return getReference(reference)
+        .removeValue()
+        .toCompletable()
+}
+
+private fun <T> Task<T>.toCompletable(): Completable {
+    return Completable.create { emitter ->
+        this
+            .addOnSuccessListener {
+                emitter.onComplete()
+            }
+            .addOnFailureListener { exception ->
+                emitter.onError(exception)
+            }
+    }
 }

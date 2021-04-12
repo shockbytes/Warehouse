@@ -55,19 +55,15 @@ class FirebaseBoxEngine<I, E> protected constructor(
     }
 
     override fun update(value: E): Completable {
-        return completableOf {
-            database.updateValue(reference, idSelector(mapper.mapFrom(value)), value)
-        }
+        return database.updateValue(reference, idSelector(mapper.mapFrom(value)), value)
     }
 
     override fun delete(value: E): Completable {
-        return completableOf {
-            database.removeChildValue(reference, idSelector(mapper.mapFrom(value)))
-        }
+        return database.removeChildValue(reference, idSelector(mapper.mapFrom(value)))
     }
 
     override fun reset(): Completable {
-        TODO("Not yet implemented")
+        return database.removeReference(reference)
     }
 
     companion object {

@@ -5,8 +5,8 @@ import at.shockbytes.warehouse.box.BoxEngine
 import at.shockbytes.warehouse.box.BoxId
 import at.shockbytes.warehouse.rules.BetaBox
 import at.shockbytes.warehouse.util.completableOf
+import at.shockbytes.warehouse.util.completableOnDefaultThread
 import hu.akarnokd.rxjava3.bridge.RxJavaBridge
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
@@ -20,6 +20,7 @@ import java.lang.IllegalStateException
  * Still to do:
  * - Threading
  */
+@Suppress("PROTECTED_CONSTRUCTOR_CALL_FROM_PUBLIC_INLINE")
 @BetaBox
 class RealmBoxEngine<I : RealmObject, E, ID> protected constructor(
     private val realm: Realm,
@@ -40,29 +41,26 @@ class RealmBoxEngine<I : RealmObject, E, ID> protected constructor(
         }
     }
 
-    // TODO This is still painful!
-    private val scheduler = AndroidSchedulers.mainThread()
-
     override fun getAll(): Observable<List<E>> {
         return realm.where(storageClass)
             .findAllAsync()
             .asFlowable()
             .map(mapper::mapListTo)
             .toObservable()
-            // TODO Required as long as Realm has no built-in RxJava3 support
+            // Required as long as Realm has no built-in RxJava3 support
             .`as`(RxJavaBridge.toV3Observable())
     }
 
     override fun store(value: E): Completable {
-        return completableOf(subscribeOn = scheduler) {
-            realm.executeTransaction { r ->
+        return completableOnDefaultThread {
+            realm.executeTransactionAsync { r ->
                 r.copyToRealmOrUpdate(mapper.mapFrom(value))
             }
         }
     }
 
     override fun update(value: E): Completable {
-        return completableOf(subscribeOn = scheduler) {
+        return completableOnDefaultThread {
             realm.executeTransaction { r ->
                 r.where(storageClass)
                     .findValue(value)
@@ -76,7 +74,7 @@ class RealmBoxEngine<I : RealmObject, E, ID> protected constructor(
     }
 
     override fun delete(value: E): Completable {
-        return completableOf {
+        return completableOnDefaultThread {
             realm.executeTransaction { realm ->
                 realm.where(storageClass)
                     .findValue(value)
@@ -112,7 +110,7 @@ class RealmBoxEngine<I : RealmObject, E, ID> protected constructor(
             mapper: Mapper<I, E>,
         ): RealmBoxEngine<I, E, ID> {
             return RealmBoxEngine(
-                Realm.getInstance(config),
+                Realm.getInstance(config).apply { refresh() },
                 I::class.java,
                 realmIdSelector,
                 mapper

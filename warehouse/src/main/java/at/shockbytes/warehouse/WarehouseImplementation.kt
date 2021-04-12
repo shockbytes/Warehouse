@@ -103,7 +103,7 @@ class WarehouseImplementation<E> internal constructor(
 
     override fun resetBox(id: BoxId): Completable {
         return findBoxById(id)?.reset()
-            ?: Completable.error(Throwable("TODO"))
+            ?: Completable.error(Throwable("Box with ID ${id.value} not found"))
     }
 
     override fun setBoxEnabled(id: BoxId, isEnabled: Boolean): Completable {

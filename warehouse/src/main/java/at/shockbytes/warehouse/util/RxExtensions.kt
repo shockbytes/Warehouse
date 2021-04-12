@@ -29,6 +29,13 @@ fun completableOf(
         .subscribeOn(subscribeOn)
 }
 
+fun completableOnDefaultThread(
+    action: () -> Unit
+): Completable {
+    return Completable
+        .fromAction(action)
+}
+
 fun completableEmitterOf(
     action: () -> Unit
 ): Completable {

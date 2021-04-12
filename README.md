@@ -135,18 +135,23 @@ warehouse["id"].subscribe { messages ->
 There are a bunch of things that make this library not even suitable for a hobby project.
 
 ### General issues
+-[ ] Update README.md
 -[ ] Test coverage
+-[ ] Tests for FirebaseBox
+-[ ] Tests for RealmBox
+-[ ] Tests for InMemoryBox
 
 ### Box issues
 -[ ] Initial box synchronization
 -[ ] A working RealmBox implementation
+-[ ] Full reactive getAll method
 
 ### BoxEngine issues
--[ ] `idSelector` can handle any data type as `id`, not only string
+-[x] `idSelector` can handle any data type as `id`, not only string
 
 ### Warehouse issues
--[ ] Final Warehouse API
--[ ] Reset boxes
+-[x] Final Warehouse API
+-[x] Reset boxes
 -[ ] Enable/Disable boxes on the go
 -[ ] Switch leading boxes on the go
 

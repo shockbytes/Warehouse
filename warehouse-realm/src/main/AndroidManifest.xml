@@ -2,4 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="at.shockbytes.warehouse.realm">
 
+    <application>
+        <activity android:name="at.shockbytes.warehouse.TestActivity" />
+    </application>
 </manifest>

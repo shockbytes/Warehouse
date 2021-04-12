@@ -5,4 +5,4 @@ import org.junit.runners.Suite
 
 @RunWith(Suite::class)
 @Suite.SuiteClasses(BoxSyncTest::class, LedgerTest::class, WarehouseTest::class)
-class AllTests
+class CoreTests
