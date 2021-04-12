@@ -6,3 +6,7 @@ fun <T> List<T>.indexOfFirstOrNull(
     val index = indexOfFirst(predicate)
     return if (index > -1) index else null
 }
+
+fun <T> List<T>.firstOrDefault(default: T): T {
+    return firstOrNull() ?: default
+}

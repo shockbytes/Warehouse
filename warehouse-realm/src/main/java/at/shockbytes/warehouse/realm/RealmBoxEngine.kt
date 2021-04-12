@@ -13,6 +13,7 @@ import io.reactivex.rxjava3.core.Single
 import io.realm.Realm
 import io.realm.RealmConfiguration
 import io.realm.RealmObject
+import io.realm.RealmQuery
 import java.lang.IllegalStateException
 
 /**
@@ -20,20 +21,19 @@ import java.lang.IllegalStateException
  * - Threading
  */
 @BetaBox
-class RealmBoxEngine<I : RealmObject, E> protected constructor(
+class RealmBoxEngine<I : RealmObject, E, ID> protected constructor(
     private val realm: Realm,
     private val storageClass: Class<I>,
-    private val idProperty: String,
-    private val mapper: Mapper<I, E>,
-    private val idSelector: (I) -> String,
+    private val realmIdSelector: RealmIdSelector<I, ID>,
+    private val mapper: Mapper<I, E>
 ) : BoxEngine<I, E> {
 
     override val id: BoxId = BoxId.of(NAME)
 
-    override fun getSingleElement(id: String): Single<E> {
+    override fun <ID> getElementForIdType(id: ID): Single<E> {
         return Single.fromCallable {
             realm.where(storageClass)
-                .equalTo(idProperty, id)
+                .findValueById(id)
                 .findFirst()
                 ?.let(mapper::mapTo)
                 ?: throw IllegalStateException("No value stored in ${this.id} for id $id")
@@ -49,7 +49,7 @@ class RealmBoxEngine<I : RealmObject, E> protected constructor(
             .asFlowable()
             .map(mapper::mapListTo)
             .toObservable()
-            // Required as long as Realm has no built-in RxJava3 support
+            // TODO Required as long as Realm has no built-in RxJava3 support
             .`as`(RxJavaBridge.toV3Observable())
     }
 
@@ -65,7 +65,7 @@ class RealmBoxEngine<I : RealmObject, E> protected constructor(
         return completableOf(subscribeOn = scheduler) {
             realm.executeTransaction { r ->
                 r.where(storageClass)
-                    .equalTo(idProperty, idSelector(mapper.mapFrom(value)))
+                    .findValue(value)
                     .findFirst()
                     ?.let {
                         // Value exists, safe to overwrite with new data
@@ -79,13 +79,20 @@ class RealmBoxEngine<I : RealmObject, E> protected constructor(
         return completableOf {
             realm.executeTransaction { realm ->
                 realm.where(storageClass)
-                    .equalTo(idProperty, idSelector(mapper.mapFrom(value)))
+                    .findValue(value)
                     .findFirst()
                     ?.deleteFromRealm()
             }
         }
     }
 
+    private fun RealmQuery<I>.findValue(value: E): RealmQuery<I> {
+        return realmIdSelector.equalToByValue(this, mapper.mapFrom(value))
+    }
+
+    private fun <ID> RealmQuery<I>.findValueById(id: ID): RealmQuery<I> {
+        return realmIdSelector.equalToById(this, id)
+    }
 
     override fun reset(): Completable {
         return completableOf {
@@ -99,18 +106,16 @@ class RealmBoxEngine<I : RealmObject, E> protected constructor(
 
         const val NAME = "realm-android"
 
-        inline fun <reified I : RealmObject, E> fromRealm(
+        inline fun <reified I : RealmObject, E, ID> fromRealm(
             config: RealmConfiguration = RealmConfiguration.Builder().build(),
-            idProperty: String,
+            realmIdSelector: RealmIdSelector<I, ID>,
             mapper: Mapper<I, E>,
-            noinline idSelector: (I) -> String
-        ): RealmBoxEngine<I, E> {
+        ): RealmBoxEngine<I, E, ID> {
             return RealmBoxEngine(
                 Realm.getInstance(config),
                 I::class.java,
-                idProperty,
-                mapper,
-                idSelector
+                realmIdSelector,
+                mapper
             )
         }
     }

@@ -8,7 +8,6 @@ import at.shockbytes.warehouse.sync.BoxSync
 import at.shockbytes.warehouse.util.asCompletable
 import at.shockbytes.warehouse.util.completableOf
 import at.shockbytes.warehouse.util.merge
-import at.shockbytes.warehouse.util.toObservableFromIterable
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
 
@@ -73,19 +72,13 @@ class WarehouseImplementation<E> internal constructor(
             .merge()
     }
 
-    override operator fun get(
-        id: String,
-        readPredicate: (Box<E>) -> Boolean,
-    ): Observable<List<E>> {
+    override operator fun get(id: BoxId): Observable<List<E>> {
         return boxes
-            .filter(readPredicate)
-            .map { box ->
-                box[id].toObservable()
+            .firstOrNull { box ->
+                box.id == id
             }
-            .toObservableFromIterable()
-            .flatMap { it }
-            .toList()
-            .toObservable()
+            ?.getAll()
+            ?: Observable.empty()
     }
 
     /**

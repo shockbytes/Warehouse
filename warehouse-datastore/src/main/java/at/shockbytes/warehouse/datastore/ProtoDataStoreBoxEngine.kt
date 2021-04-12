@@ -12,12 +12,12 @@ import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 
 @ExperimentalBox
-class ProtoDataStoreBoxEngine<I, E>(
+class ProtoDataStoreBoxEngine<I, E, ID>(
     context: Context,
     dataStoreName: String,
     serializer: Serializer<I>,
     private val mapper: Mapper<I, E>,
-    private val idSelector: (I) -> String
+    private val idSelector: (I) -> ID
 ) : BoxEngine<I, E> {
 
     private val dataStore: DataStore<I> = createDataStore(context, dataStoreName, serializer)
@@ -32,7 +32,7 @@ class ProtoDataStoreBoxEngine<I, E>(
 
     override val id: BoxId = BoxId.of("preferences-data-store-android")
 
-    override fun getSingleElement(id: String): Single<E> {
+    override fun <ID> getElementForIdType(id: ID): Single<E> {
         TODO("Not yet implemented")
     }
 

@@ -16,7 +16,6 @@ sealed class BoxOperation<E> {
         override fun perform(box: Box<E>): Completable = Completable.complete()
     }
 
-
     data class StoreOperation<E>(
         val value: E,
         override val name: String = "store",

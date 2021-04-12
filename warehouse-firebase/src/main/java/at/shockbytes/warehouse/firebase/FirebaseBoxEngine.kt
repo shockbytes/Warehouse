@@ -35,7 +35,7 @@ class FirebaseBoxEngine<I, E> protected constructor(
 
     override val id: BoxId = BoxId.of("firebase")
 
-    override fun getSingleElement(id: String): Single<E> {
+    override fun <ID> getElementForIdType(id: ID): Single<E> {
         return subject
             .map { values ->
                 values

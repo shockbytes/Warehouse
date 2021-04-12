@@ -10,11 +10,11 @@ import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 
 @ExperimentalBox
-class FileBoxEngine<I, E> protected constructor(
+class FileBoxEngine<I, E, ID> protected constructor(
     context: Context,
     fileName: String,
     private val mapper: Mapper<I, E>,
-    private val idSelector: (I) -> String,
+    private val idSelector: (I) -> ID,
     private val fileSerializer: FileSerializer<E>
 ) : BoxEngine<I, E> {
 
@@ -36,7 +36,7 @@ class FileBoxEngine<I, E> protected constructor(
         TODO("Not yet implemented")
     }
 
-    override fun getSingleElement(id: String): Single<E> {
+    override fun <ID> getElementForIdType(id: ID): Single<E> {
         TODO("Not yet implemented")
     }
 
@@ -46,13 +46,13 @@ class FileBoxEngine<I, E> protected constructor(
 
     companion object {
 
-        inline fun <reified I, E> fromContext(
+        inline fun <reified I, E, ID> fromContext(
             context: Context,
             fileName: String,
             mapper: Mapper<I, E>,
             fileSerializer: FileSerializer<E>,
-            noinline idSelector: (I) -> String,
-        ): FileBoxEngine<I, E> {
+            noinline idSelector: (I) -> ID,
+        ): FileBoxEngine<I, E, ID> {
             return FileBoxEngine(
                 context,
                 fileName,

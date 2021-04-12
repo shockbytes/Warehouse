@@ -12,15 +12,15 @@ import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 import java.lang.IllegalStateException
 
-class InMemoryBoxEngine<I, E> private constructor(
+class InMemoryBoxEngine<I, E, ID> private constructor(
     private val mapper: Mapper<I, E>,
-    private val idSelector: (I) -> String,
+    private val idSelector: (I) -> ID,
     override val id: BoxId = BoxId.of(NAME)
 ) : BoxEngine<I, E> {
 
     private val storage: MutableList<I> = mutableListOf()
 
-    override fun getSingleElement(id: String): Single<E> {
+    override fun <ID> getElementForIdType(id: ID): Single<E> {
         return storage
             .find { value -> idSelector(value) == id }
             ?.let { internal -> Single.just(mapper.mapTo(internal)) }
@@ -82,12 +82,12 @@ class InMemoryBoxEngine<I, E> private constructor(
 
         fun <E> default(
             idSelector: (E) -> String = { "" }
-        ): InMemoryBoxEngine<E, E> = InMemoryBoxEngine(IdentityMapper(), idSelector)
+        ): InMemoryBoxEngine<E, E, String> = InMemoryBoxEngine(IdentityMapper(), idSelector)
 
-        fun <I, E> custom(
+        fun <I, E, ID> custom(
             name: String,
             mapper: Mapper<I, E>,
-            idSelector: (I) -> String
-        ): InMemoryBoxEngine<I, E> = InMemoryBoxEngine(mapper, idSelector, BoxId.of(name))
+            idSelector: (I) -> ID
+        ): InMemoryBoxEngine<I, E, ID> = InMemoryBoxEngine(mapper, idSelector, BoxId.of(name))
     }
 }

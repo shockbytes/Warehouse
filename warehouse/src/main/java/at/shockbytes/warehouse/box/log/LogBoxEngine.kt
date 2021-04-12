@@ -14,7 +14,7 @@ class LogBoxEngine<I, E> private constructor(
 
     override val id: BoxId = BoxId.of(NAME)
 
-    override fun getSingleElement(id: String): Single<E> {
+    override fun <ID> getElementForIdType(id: ID): Single<E> {
         Log.d(tag, "Trying to get resource with id: $id")
         return Single.error(IllegalStateException("Cannot invoke this here..."))
     }

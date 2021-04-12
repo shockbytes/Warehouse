@@ -24,11 +24,11 @@ class Box<E>(
         statePreserver.updateHash(hash)
     }
 
-    operator fun get(id: String): Single<E> {
+    operator fun <ID> get(id: ID): Single<E> {
         return getSingleElement(id)
     }
 
-    fun getSingleElement(id: String): Single<E> = boxEngine.getSingleElement(id)
+    fun <ID> getSingleElement(id: ID): Single<E> = boxEngine.getElementForIdType(id)
 
     fun getAll(): Observable<List<E>> = boxEngine.getAll()
 

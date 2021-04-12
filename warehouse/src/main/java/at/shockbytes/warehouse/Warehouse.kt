@@ -23,10 +23,7 @@ interface Warehouse<E> {
         writePredicate: (Box<E>) -> Boolean = { true },
     ): Completable
 
-    operator fun get(
-        id: String,
-        readPredicate: (Box<E>) -> Boolean = { true },
-    ): Observable<List<E>>
+    operator fun get(id: BoxId): Observable<List<E>>
 
     fun getAll(): Observable<List<E>>
 

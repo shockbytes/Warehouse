@@ -18,6 +18,7 @@ import at.shockbytes.warehouse.box.log.LogBoxEngine
 import at.shockbytes.warehouse.firebase.FirebaseBoxEngine
 import at.shockbytes.warehouse.ledger.Ledger
 import at.shockbytes.warehouse.realm.RealmBoxEngine
+import at.shockbytes.warehouse.realm.RealmIdSelector
 import at.shockbytes.warehouse.sample.realm.RealmMessageMapper
 import at.shockbytes.warehouse.state.InMemoryStatePreserver
 import com.google.firebase.database.FirebaseDatabase
@@ -63,16 +64,18 @@ class MainActivity : AppCompatActivity() {
         warehouse = Warehouse.new(
             boxes = listOf(
                 Box(
-                    LogBoxEngine.withTag("LogBox"),
-                    InMemoryStatePreserver()
-                ),
-                Box(
                     RealmBoxEngine.fromRealm(
                         config,
                         mapper = RealmMessageMapper,
-                        idProperty = "id",
-                        idSelector = { it.id }
+                        realmIdSelector = RealmIdSelector(
+                            idProperty = "id",
+                            idSelector = { it.id }
+                        )
                     ),
+                    InMemoryStatePreserver()
+                ),
+                Box(
+                    LogBoxEngine.withTag("LogBox"),
                     InMemoryStatePreserver()
                 ),
                 Box(
@@ -173,14 +176,6 @@ class MainActivity : AppCompatActivity() {
             })
             .addTo(compositeDisposable)
     }
-
-    private fun getSingleElementForId(id: String) {
-
-        warehouse["id"].subscribe { messages ->
-            showToast("${messages.size} loaded for id")
-        }
-    }
-
 
     private fun showToast(msg: String) {
         Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
