@@ -2,7 +2,10 @@ package at.shockbytes.warehouse.box
 
 import at.shockbytes.warehouse.ledger.BoxOperation
 import at.shockbytes.warehouse.ledger.Hash
-import at.shockbytes.warehouse.state.StatePreserver
+import at.shockbytes.warehouse.state.box.BoxActivationDelegate
+import at.shockbytes.warehouse.state.head.TransientLedgerHeadState
+import at.shockbytes.warehouse.state.head.LedgerHeadState
+import at.shockbytes.warehouse.state.box.TransientBoxActivationDelegate
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
@@ -10,18 +13,20 @@ import io.reactivex.rxjava3.kotlin.concatAll
 
 class Box<E>(
     private val boxEngine: BoxEngine<*, E>,
-    private val statePreserver: StatePreserver,
-    var isEnabled: Boolean = true
+    private val headState: LedgerHeadState,
+    activationDelegate: BoxActivationDelegate
 ) {
+
+    var isEnabled: Boolean by activationDelegate
 
     val id: BoxId
         get() = boxEngine.id
 
     val currentState: Hash
-        get() = statePreserver.getCurrentState()
+        get() = headState.headHash()
 
     fun updateHash(hash: Hash) {
-        statePreserver.updateHash(hash)
+        headState.updateHead(hash)
     }
 
     operator fun <ID> get(id: ID): Single<E> {
@@ -49,10 +54,23 @@ class Box<E>(
     }
 
     fun syncOperations(operations: List<BoxOperation<E>>): Completable {
+        println("${this.id.value} syncing ${operations.size} operations...")
+
         return operations
             .map { operation ->
                 operation.perform(this)
             }
             .concatAll()
+    }
+
+    companion object {
+
+        fun <E> defaultFrom(boxEngine: BoxEngine<*, E>): Box<E> {
+            return Box(
+                boxEngine,
+                TransientLedgerHeadState(),
+                TransientBoxActivationDelegate(defaultValue = false)
+            )
+        }
     }
 }

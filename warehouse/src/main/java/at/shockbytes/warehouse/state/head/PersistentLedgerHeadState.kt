@@ -1,19 +1,19 @@
-package at.shockbytes.warehouse.state
+package at.shockbytes.warehouse.state.head
 
 import android.content.SharedPreferences
 import at.shockbytes.warehouse.ledger.Hash
 
-class SharedPreferencesStatePreserver(
+class PersistentLedgerHeadState(
     private val sharedPreferences: SharedPreferences
-) : StatePreserver {
+) : LedgerHeadState {
 
-    override fun getCurrentState(): Hash {
+    override fun headHash(): Hash {
         return sharedPreferences.getString(PREFS_HASH, "")
             ?.let(::Hash)
             ?: Hash.empty()
     }
 
-    override fun updateHash(hash: Hash) {
+    override fun updateHead(hash: Hash) {
         sharedPreferences.edit().putString(PREFS_HASH, hash.value).apply()
     }
 

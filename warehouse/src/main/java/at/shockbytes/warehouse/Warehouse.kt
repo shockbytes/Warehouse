@@ -29,6 +29,8 @@ interface Warehouse<E> {
 
     fun resetBox(id: BoxId): Completable
 
+    fun reset(): Completable
+
     fun setBoxEnabled(id: BoxId, isEnabled: Boolean): Completable
 
     fun forceBoxSynchronization(): Completable

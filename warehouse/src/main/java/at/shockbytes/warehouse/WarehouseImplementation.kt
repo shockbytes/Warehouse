@@ -68,6 +68,7 @@ class WarehouseImplementation<E> internal constructor(
     ): Completable {
         return boxes
             .filter(writePredicate)
+            .filter { it.isEnabled }
             .map(action)
             .merge()
     }
@@ -97,6 +98,7 @@ class WarehouseImplementation<E> internal constructor(
     ): Observable<List<E>> {
         return boxes
             .filter(readPredicate)
+            .filter { it.isEnabled }
             .map(action)
             .merge()
     }
@@ -106,13 +108,31 @@ class WarehouseImplementation<E> internal constructor(
             ?: Completable.error(Throwable("Box with ID ${id.value} not found"))
     }
 
+    override fun reset(): Completable {
+        return boxes
+            .map { box ->
+                box.reset()
+            }
+            .merge()
+    }
+
     override fun setBoxEnabled(id: BoxId, isEnabled: Boolean): Completable {
+
+        /**
+         * TODO if [isEnabled] = true --> synchronize with Leaderbox too!
+         * TODO Clean up this implementation!
+         */
+
         return completableOf {
             findBoxById(id)
                 ?.let { box ->
                     box.isEnabled = isEnabled
                 }
                 ?: throw IllegalStateException("Box with $id not found")
+
+            if (isEnabled) {
+                forceBoxSynchronization().blockingAwait()
+            }
         }
     }
 

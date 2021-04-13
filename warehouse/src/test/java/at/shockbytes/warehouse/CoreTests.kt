@@ -4,5 +4,10 @@ import org.junit.runner.RunWith
 import org.junit.runners.Suite
 
 @RunWith(Suite::class)
-@Suite.SuiteClasses(BoxSyncTest::class, LedgerTest::class, WarehouseTest::class)
+@Suite.SuiteClasses(
+    BoxSyncTest::class,
+    LedgerTest::class,
+    WarehouseTest::class,
+    WarehouseSynchronizationTest::class
+)
 class CoreTests

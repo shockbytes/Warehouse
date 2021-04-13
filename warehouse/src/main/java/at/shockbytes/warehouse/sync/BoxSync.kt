@@ -2,6 +2,7 @@ package at.shockbytes.warehouse.sync
 
 import at.shockbytes.warehouse.box.Box
 import at.shockbytes.warehouse.box.BoxId
+import at.shockbytes.warehouse.ledger.BoxOperation
 import at.shockbytes.warehouse.ledger.Ledger
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.kotlin.concatAll
@@ -28,10 +29,17 @@ class BoxSync<E>(
             .map { box ->
                 ledger.operationsSince(box.currentState)
                     .map { blocks ->
-                        blocks.map { it.data }
+                        blocks
+                            // Each box takes care of their own init operation
+                            .filterNot { it.data is BoxOperation.InitOperation }
+                            .map { it.data }
                     }
                     .flatMapCompletable { operations ->
-                        box.syncOperations(operations)
+                        if (operations.isNotEmpty()) {
+                            box.syncOperations(operations)
+                        } else {
+                            Completable.complete()
+                        }
                     }
             }
             .concatAll()

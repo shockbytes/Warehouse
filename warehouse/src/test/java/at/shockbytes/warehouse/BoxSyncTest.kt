@@ -6,7 +6,8 @@ import at.shockbytes.warehouse.box.memory.InMemoryBoxEngine
 import at.shockbytes.warehouse.ledger.BoxOperation
 import at.shockbytes.warehouse.ledger.Ledger
 import at.shockbytes.warehouse.model.Content
-import at.shockbytes.warehouse.state.InMemoryStatePreserver
+import at.shockbytes.warehouse.state.box.TransientBoxActivationDelegate
+import at.shockbytes.warehouse.state.head.TransientLedgerHeadState
 import at.shockbytes.warehouse.sync.BoxSync
 import org.junit.Assert
 import org.junit.Test
@@ -16,9 +17,8 @@ class BoxSyncTest {
     @Test
     fun `test BoxSync`() {
 
-        val leader = Box<Content>(
+        val leader = Box.defaultFrom<Content>(
             InMemoryBoxEngine.custom("in-memory.1", IdentityMapper()) { it.id },
-            InMemoryStatePreserver()
         )
 
         leader.store(Content("1", "test")).blockingAwait()
@@ -34,9 +34,8 @@ class BoxSyncTest {
 
         leader.updateHash(lastHash)
 
-        val follower = Box<Content>(
+        val follower = Box.defaultFrom<Content>(
             InMemoryBoxEngine.custom("in-memory.2", IdentityMapper()) { it.id },
-            InMemoryStatePreserver()
         )
 
         val boxes = listOf(leader, follower)

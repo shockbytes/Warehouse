@@ -7,7 +7,7 @@ import at.shockbytes.warehouse.TestActivity
 import at.shockbytes.warehouse.box.Box
 import at.shockbytes.warehouse.realm.model.RealmTestContentMapper
 import at.shockbytes.warehouse.realm.model.TestContent
-import at.shockbytes.warehouse.state.InMemoryStatePreserver
+import at.shockbytes.warehouse.state.head.TransientLedgerHeadState
 import io.realm.Realm
 import io.realm.RealmConfiguration
 import org.junit.Before
@@ -36,7 +36,7 @@ class AndroidRealmBoxTest {
                     idSelector = { it.id }
                 )
             ),
-            InMemoryStatePreserver(),
+            TransientLedgerHeadState(),
             isEnabled = true
         )
     }

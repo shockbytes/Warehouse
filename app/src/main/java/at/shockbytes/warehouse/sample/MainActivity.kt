@@ -20,7 +20,6 @@ import at.shockbytes.warehouse.ledger.Ledger
 import at.shockbytes.warehouse.realm.RealmBoxEngine
 import at.shockbytes.warehouse.realm.RealmIdSelector
 import at.shockbytes.warehouse.sample.realm.RealmMessageMapper
-import at.shockbytes.warehouse.state.InMemoryStatePreserver
 import com.google.firebase.database.FirebaseDatabase
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.addTo
@@ -63,7 +62,7 @@ class MainActivity : AppCompatActivity() {
         val sharedLedger = Ledger.inMemory<Message>()
         warehouse = Warehouse.new(
             boxes = listOf(
-                Box(
+                Box.defaultFrom(
                     RealmBoxEngine.fromRealm(
                         config,
                         mapper = RealmMessageMapper,
@@ -72,17 +71,14 @@ class MainActivity : AppCompatActivity() {
                             idSelector = { it.id }
                         )
                     ),
-                    InMemoryStatePreserver()
                 ),
-                Box(
+                Box.defaultFrom(
                     LogBoxEngine.withTag("LogBox"),
-                    InMemoryStatePreserver()
                 ),
-                Box(
+                Box.defaultFrom(
                     InMemoryBoxEngine.default(),
-                    InMemoryStatePreserver()
                 ),
-                Box(
+                Box.defaultFrom(
                     FirebaseBoxEngine.fromDatabase(
                         FirebaseDatabase.getInstance().reference.database,
                         reference = "/messages",
@@ -90,7 +86,6 @@ class MainActivity : AppCompatActivity() {
                         cancelHandler = { error -> Timber.e(error.toException()) },
                         mapper = IdentityMapper()
                     ),
-                    InMemoryStatePreserver()
                 )
             ),
             sharedLedger,
