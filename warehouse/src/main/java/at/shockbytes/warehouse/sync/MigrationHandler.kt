@@ -18,7 +18,7 @@ class MigrationHandler<E>(private val migrationBox: Box<E>?) {
         // There might be no migrationBox, that's okay
         return if (migrationBox != null) {
             migrationBox.requiresMigration(ledger) // 1.
-                .flatMapCompletable{ action: MigrationAction<E> ->
+                .flatMapCompletable { action: MigrationAction<E> ->
                     handleMigrationAction(action, ledger, boxSync)
                 }
         } else {
@@ -35,7 +35,12 @@ class MigrationHandler<E>(private val migrationBox: Box<E>?) {
             is MigrationAction.Migration -> {
                 ledger.storeOperation(action.migrationOperation).asCompletable() // 2.
                     .andThen(boxSync.synchronizeLeader(ledger)) // 3.
-                    .andThen(boxSync.syncWithLedger(ledger, exceptMigrationSource = migrationBox)) // 4.
+                    .andThen(
+                        boxSync.syncWithLedger(
+                            ledger,
+                            exceptMigrationSource = migrationBox
+                        )
+                    ) // 4.
             }
             is MigrationAction.NoMigration -> Completable.complete()
         }

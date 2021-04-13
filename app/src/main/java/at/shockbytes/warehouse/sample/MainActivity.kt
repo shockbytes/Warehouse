@@ -9,12 +9,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import at.shockbytes.warehouse.IdentityMapper
 import at.shockbytes.warehouse.R
-import at.shockbytes.warehouse.WarehouseConfiguration
 import at.shockbytes.warehouse.Warehouse
+import at.shockbytes.warehouse.WarehouseConfiguration
 import at.shockbytes.warehouse.box.Box
 import at.shockbytes.warehouse.box.BoxId
-import at.shockbytes.warehouse.box.memory.InMemoryBoxEngine
 import at.shockbytes.warehouse.box.log.LogBoxEngine
+import at.shockbytes.warehouse.box.memory.InMemoryBoxEngine
 import at.shockbytes.warehouse.firebase.FirebaseBoxEngine
 import at.shockbytes.warehouse.ledger.Ledger
 import at.shockbytes.warehouse.realm.RealmBoxEngine
@@ -92,13 +92,11 @@ class MainActivity : AppCompatActivity() {
             WarehouseConfiguration(leaderBoxId = BoxId.of(InMemoryBoxEngine.NAME))
         )
 
-
         sharedLedger.onLedgerEvents()
             .subscribe { block ->
                 (rvLedger.adapter as LedgerAdapter).add(block)
                 rvLedger.smoothScrollToPosition(rvLedger.adapter!!.itemCount - 1)
             }
-
     }
 
     private fun setupViews() {
@@ -120,7 +118,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             R.id.menu_delete -> {
-
             }
         }
 
@@ -137,12 +134,15 @@ class MainActivity : AppCompatActivity() {
         val msg = Message("random-id-1", "Oh, it's me!", "This is a message")
 
         warehouse.update(msg)
-            .subscribe({
-                Timber.e("BOX: Successfully updated all boxes!")
-                onComplete()
-            }, { throwable ->
-                Timber.e(throwable)
-            })
+            .subscribe(
+                {
+                    Timber.e("BOX: Successfully updated all boxes!")
+                    onComplete()
+                },
+                { throwable ->
+                    Timber.e(throwable)
+                }
+            )
             .addTo(compositeDisposable)
     }
 
@@ -151,24 +151,30 @@ class MainActivity : AppCompatActivity() {
         onComplete: () -> Unit
     ) {
         warehouse.store(message)
-            .subscribe({
-                Timber.e("BOX: Successfully stored in all boxes!")
-                onComplete()
-            }, { throwable ->
-                Timber.e(throwable)
-            })
+            .subscribe(
+                {
+                    Timber.e("BOX: Successfully stored in all boxes!")
+                    onComplete()
+                },
+                { throwable ->
+                    Timber.e(throwable)
+                }
+            )
             .addTo(compositeDisposable)
     }
 
     private fun getAll() {
 
         warehouse.getAll()
-            .subscribe({ messages ->
-                Timber.e("Get all!")
-                // Timber.e(messages.toString())
-            }, { throwable ->
-                Timber.e(throwable)
-            })
+            .subscribe(
+                { messages ->
+                    Timber.e("Get all!")
+                    // Timber.e(messages.toString())
+                },
+                { throwable ->
+                    Timber.e(throwable)
+                }
+            )
             .addTo(compositeDisposable)
     }
 

@@ -6,8 +6,6 @@ import at.shockbytes.warehouse.box.memory.InMemoryBoxEngine
 import at.shockbytes.warehouse.ledger.BoxOperation
 import at.shockbytes.warehouse.ledger.Ledger
 import at.shockbytes.warehouse.model.Content
-import at.shockbytes.warehouse.state.box.TransientBoxActivationDelegate
-import at.shockbytes.warehouse.state.head.TransientLedgerHeadState
 import at.shockbytes.warehouse.sync.BoxSync
 import org.junit.Assert
 import org.junit.Test
@@ -49,7 +47,5 @@ class BoxSyncTest {
 
         Assert.assertTrue(leader["2"].blockingGet() == Content("2", "this is it"))
         Assert.assertTrue(follower["2"].blockingGet() == Content("2", "this is it"))
-
     }
-
 }

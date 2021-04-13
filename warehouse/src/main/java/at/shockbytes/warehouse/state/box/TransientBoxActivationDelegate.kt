@@ -4,7 +4,7 @@ import kotlin.reflect.KProperty
 
 class TransientBoxActivationDelegate(
     defaultValue: Boolean = true
-): BoxActivationDelegate {
+) : BoxActivationDelegate {
 
     private var value: Boolean = defaultValue
 

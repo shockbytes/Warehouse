@@ -7,13 +7,11 @@ import at.shockbytes.warehouse.TestActivity
 import at.shockbytes.warehouse.box.Box
 import at.shockbytes.warehouse.realm.model.RealmTestContentMapper
 import at.shockbytes.warehouse.realm.model.TestContent
-import at.shockbytes.warehouse.state.head.TransientLedgerHeadState
 import io.realm.Realm
 import io.realm.RealmConfiguration
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-
 
 @RunWith(AndroidJUnit4::class)
 class AndroidRealmBoxTest {
@@ -24,7 +22,7 @@ class AndroidRealmBoxTest {
     fun setup() {
         Realm.init(InstrumentationRegistry.getInstrumentation().targetContext)
 
-        box = Box(
+        box = Box.defaultFrom(
             RealmBoxEngine.fromRealm(
                 RealmConfiguration.Builder()
                     .inMemory()
@@ -35,9 +33,7 @@ class AndroidRealmBoxTest {
                     idProperty = "id",
                     idSelector = { it.id }
                 )
-            ),
-            TransientLedgerHeadState(),
-            isEnabled = true
+            )
         )
     }
 
@@ -54,8 +50,6 @@ class AndroidRealmBoxTest {
                 .test()
                 .assertValueAt(0, listOf())
                 .assertValueAt(1, listOf(TestContent(id = 12, content = "This is a content")))
-
-
         }
     }
 }

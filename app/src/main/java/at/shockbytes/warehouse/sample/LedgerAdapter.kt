@@ -6,7 +6,6 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import at.shockbytes.warehouse.R
-import at.shockbytes.warehouse.ledger.Ledger
 import at.shockbytes.warehouse.ledger.LedgerBlock
 
 class LedgerAdapter(

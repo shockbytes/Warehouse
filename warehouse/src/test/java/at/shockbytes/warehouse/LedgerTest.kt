@@ -8,7 +8,6 @@ import at.shockbytes.warehouse.model.Content
 import org.junit.Before
 import org.junit.Test
 
-
 class LedgerTest {
 
     private lateinit var ledger: Ledger<Content>
@@ -127,7 +126,6 @@ class LedgerTest {
             )
     }
 
-
     @Test
     fun `test allOperations with empty ledger`() {
 
@@ -182,5 +180,4 @@ class LedgerTest {
         ledger.storeOperation(createOperation1).blockingGet()
         ledger.storeOperation(createOperation2).blockingGet()
     }
-
 }

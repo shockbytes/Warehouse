@@ -21,7 +21,6 @@ class InMemoryBoxEngine<I, E, ID> private constructor(
 
     private val storage: MutableList<I> = mutableListOf()
 
-
     init {
         storage.addAll(mapper.mapListFrom(initialData))
     }

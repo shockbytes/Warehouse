@@ -6,7 +6,7 @@ import io.realm.annotations.PrimaryKey
 open class RealmTestContent(
     @PrimaryKey var id: Int = -1,
     var content: String = ""
-): RealmObject() {
+) : RealmObject() {
 
     fun toTestContent(): TestContent {
         return TestContent(id, content)

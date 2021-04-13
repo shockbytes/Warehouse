@@ -6,6 +6,5 @@ class WarehouseTest {
 
     @Test
     fun test() {
-
     }
 }

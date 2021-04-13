@@ -27,7 +27,5 @@ data class RealmIdSelector<I, ID>(
             is Date -> realmQuery.equalTo(idProperty, id)
             else -> throw IllegalStateException("")
         }
-
     }
-
 }

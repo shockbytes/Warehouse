@@ -85,5 +85,4 @@ class FirebaseBoxEngine<I, E> protected constructor(
             )
         }
     }
-
 }

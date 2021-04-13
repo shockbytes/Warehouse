@@ -53,7 +53,6 @@ class WarehouseMigrationTest {
             }
     }
 
-
     @Test
     fun `test migration happens only once`() {
 
@@ -95,8 +94,7 @@ class WarehouseMigrationTest {
         ledger.allOperations()
             .test()
             .assertValue { blocks ->
-                blocks[0].data is BoxOperation.InitOperation<*> &&
-                        blocks[1].data is BoxOperation.MigrateOperation<*>
+                blocks[0].data is BoxOperation.InitOperation<*> && blocks[1].data is BoxOperation.MigrateOperation<*>
             }
 
         warehouse[BoxId.of("in-memory.2")]

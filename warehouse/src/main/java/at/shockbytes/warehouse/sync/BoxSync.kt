@@ -37,7 +37,6 @@ class BoxSync<E>(
             .concatAll()
     }
 
-
     fun synchronizeLeader(ledger: Ledger<E>): Completable {
         return synchronizeBoxWithLedger(leaderBox, ledger)
     }

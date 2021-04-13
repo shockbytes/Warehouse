@@ -9,4 +9,3 @@ data class LedgerBlock<E>(
 
     val hash: Hash = Hash(DigestUtils.sha256Hex((previousHash + data).toByteArray()))
 }
-

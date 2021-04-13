@@ -2,7 +2,6 @@ package at.shockbytes.warehouse.realm.model
 
 import at.shockbytes.warehouse.Mapper
 
-
 object RealmTestContentMapper : Mapper<RealmTestContent, TestContent>() {
 
     override fun mapTo(data: RealmTestContent): TestContent {

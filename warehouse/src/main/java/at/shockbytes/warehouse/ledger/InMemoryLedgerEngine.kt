@@ -26,5 +26,4 @@ class InMemoryLedgerEngine<E> : LedgerEngine<E> {
         chain.add(LedgerBlock(lastHash, operation))
         return Completable.complete()
     }
-
 }

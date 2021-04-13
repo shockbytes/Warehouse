@@ -39,7 +39,6 @@ class WarehouseSynchronizationTest {
             ledger = Ledger.inMemory(),
             WarehouseConfiguration(leaderBoxId = BoxId.of("in-memory.1"))
         )
-
     }
 
     @Test
@@ -112,7 +111,5 @@ class WarehouseSynchronizationTest {
             .assertValue { storedContent ->
                 storedContent == testData
             }
-
     }
-
 }

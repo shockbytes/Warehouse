@@ -6,4 +6,3 @@ data class Hash(val value: String) {
         fun empty(): Hash = Hash("")
     }
 }
-

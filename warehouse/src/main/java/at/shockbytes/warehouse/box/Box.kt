@@ -1,13 +1,13 @@
 package at.shockbytes.warehouse.box
 
-import at.shockbytes.warehouse.sync.MigrationAction
 import at.shockbytes.warehouse.ledger.BoxOperation
 import at.shockbytes.warehouse.ledger.Hash
 import at.shockbytes.warehouse.ledger.Ledger
 import at.shockbytes.warehouse.state.box.BoxActivationDelegate
-import at.shockbytes.warehouse.state.head.TransientLedgerHeadState
-import at.shockbytes.warehouse.state.head.LedgerHeadState
 import at.shockbytes.warehouse.state.box.TransientBoxActivationDelegate
+import at.shockbytes.warehouse.state.head.LedgerHeadState
+import at.shockbytes.warehouse.state.head.TransientLedgerHeadState
+import at.shockbytes.warehouse.sync.MigrationAction
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single

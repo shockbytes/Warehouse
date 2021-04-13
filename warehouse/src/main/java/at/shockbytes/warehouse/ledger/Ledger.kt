@@ -14,7 +14,7 @@ class Ledger<E> private constructor(
         get() = ledgerEngine.entries()
             .map { blocks ->
                 // TODO Docs
-                blocks.isEmpty() || blocks.size == 1 && blocks[0].data is BoxOperation.InitOperation
+                blocks.isEmpty() || blocks.firstOrNull()?.data is BoxOperation.InitOperation
             }
 
     fun onLedgerEvents(): Observable<LedgerBlock<E>> = ledgerEventSource
