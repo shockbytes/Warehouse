@@ -15,10 +15,16 @@ import java.lang.IllegalStateException
 class InMemoryBoxEngine<I, E, ID> private constructor(
     private val mapper: Mapper<I, E>,
     private val idSelector: (I) -> ID,
-    override val id: BoxId = BoxId.of(NAME)
+    override val id: BoxId = BoxId.of(NAME),
+    initialData: List<E> = listOf()
 ) : BoxEngine<I, E> {
 
     private val storage: MutableList<I> = mutableListOf()
+
+
+    init {
+        storage.addAll(mapper.mapListFrom(initialData))
+    }
 
     override fun <ID> getElementForIdType(id: ID): Single<E> {
         return storage
@@ -89,5 +95,12 @@ class InMemoryBoxEngine<I, E, ID> private constructor(
             mapper: Mapper<I, E>,
             idSelector: (I) -> ID
         ): InMemoryBoxEngine<I, E, ID> = InMemoryBoxEngine(mapper, idSelector, BoxId.of(name))
+
+        internal fun <I, E, ID> withData(
+            name: String,
+            mapper: Mapper<I, E>,
+            idSelector: (I) -> ID,
+            data: List<E>
+        ): InMemoryBoxEngine<I, E, ID> = InMemoryBoxEngine(mapper, idSelector, BoxId.of(name), data)
     }
 }

@@ -12,7 +12,7 @@ class BoxSync<E>(
     private val boxes: List<Box<E>>
 ) {
 
-    private val leaderBox = findLeaderFromConfig()
+    private val leaderBox: Box<E> = findLeaderFromConfig()
 
     private val follower = boxes.toMutableSet()
         .apply {
@@ -24,24 +24,38 @@ class BoxSync<E>(
             ?: throw IllegalStateException("Could not find LeaderBox with name $leaderBoxId")
     }
 
-    fun syncWithLedger(ledger: Ledger<E>): Completable {
+    fun syncWithLedger(
+        ledger: Ledger<E>,
+        exceptMigrationSource: Box<E>? = null
+    ): Completable {
         return follower
+            // Do not sync migrationSource if that was the trigger of this operation
+            .filterNot { it.id == exceptMigrationSource?.id }
             .map { box ->
-                ledger.operationsSince(box.currentState)
-                    .map { blocks ->
-                        blocks
-                            // Each box takes care of their own init operation
-                            .filterNot { it.data is BoxOperation.InitOperation }
-                            .map { it.data }
-                    }
-                    .flatMapCompletable { operations ->
-                        if (operations.isNotEmpty()) {
-                            box.syncOperations(operations)
-                        } else {
-                            Completable.complete()
-                        }
-                    }
+                synchronizeBoxWithLedger(box, ledger)
             }
             .concatAll()
+    }
+
+
+    fun synchronizeLeader(ledger: Ledger<E>): Completable {
+        return synchronizeBoxWithLedger(leaderBox, ledger)
+    }
+
+    private fun synchronizeBoxWithLedger(box: Box<E>, ledger: Ledger<E>): Completable {
+        return ledger.operationsSince(box.currentState)
+            .map { blocks ->
+                blocks
+                    // Each box takes care of their own init operation
+                    .filterNot { it.data is BoxOperation.InitOperation }
+                    .map { it.data }
+            }
+            .flatMapCompletable { operations ->
+                if (operations.isNotEmpty()) {
+                    box.syncOperations(operations)
+                } else {
+                    Completable.complete()
+                }
+            }
     }
 }

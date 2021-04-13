@@ -135,15 +135,16 @@ warehouse["id"].subscribe { messages ->
 There are a bunch of things that make this library not even suitable for a hobby project.
 
 ### General issues
--[ ] Update README.md
+-[ ] Update documentation & usage in README.md
 -[ ] Test coverage
 -[ ] Tests for FirebaseBox
 -[ ] Tests for RealmBox
 -[ ] Tests for InMemoryBox
 
 ### Box issues
--[ ] Initial box synchronization
--[ ] A working RealmBox implementation
+-[x] Initial box synchronization
+-[ ] A working RealmBoxEngine implementation
+-[ ] A working FirebaseBoxEngine implementation
 -[ ] Full reactive getAll method
 
 ### BoxEngine issues
@@ -152,7 +153,7 @@ There are a bunch of things that make this library not even suitable for a hobby
 ### Warehouse issues
 -[x] Final Warehouse API
 -[x] Reset boxes
--[ ] Enable/Disable boxes on the go
+-[x] Enable/Disable boxes on the go
 -[ ] Switch leading boxes on the go
 
 ### Supported BoxEngines

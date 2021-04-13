@@ -8,6 +8,7 @@ import org.junit.runners.Suite
     BoxSyncTest::class,
     LedgerTest::class,
     WarehouseTest::class,
-    WarehouseSynchronizationTest::class
+    WarehouseSynchronizationTest::class,
+    WarehouseMigrationTest::class
 )
 class CoreTests

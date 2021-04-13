@@ -5,8 +5,8 @@ import at.shockbytes.warehouse.box.BoxId
 import at.shockbytes.warehouse.ledger.BoxOperation
 import at.shockbytes.warehouse.ledger.Ledger
 import at.shockbytes.warehouse.sync.BoxSync
+import at.shockbytes.warehouse.sync.MigrationHandler
 import at.shockbytes.warehouse.util.asCompletable
-import at.shockbytes.warehouse.util.completableOf
 import at.shockbytes.warehouse.util.merge
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
@@ -17,13 +17,17 @@ class WarehouseImplementation<E> internal constructor(
     private val config: WarehouseConfiguration
 ) : Warehouse<E> {
 
+    private val boxSync = BoxSync(config.leaderBoxId, boxes)
+    private val migrationHandler = MigrationHandler(findBoxById(config.migrationSource))
+
     init {
-        // TODO Not nice
-        forceBoxSynchronization().blockingAwait()
+        // TODO .blockingAwait is not nice, how can we make this more beautiful?
+        migrationHandler.checkForMigrations(ledger, boxSync)
+            .blockingAwait()
     }
 
     override fun forceBoxSynchronization(): Completable {
-        return BoxSync(config.leaderBoxId, boxes).syncWithLedger(ledger)
+        return boxSync.syncWithLedger(ledger)
     }
 
     override fun store(
@@ -116,27 +120,21 @@ class WarehouseImplementation<E> internal constructor(
             .merge()
     }
 
+    /**
+     * Enabling a box requires a synchronization afterwards
+     */
     override fun setBoxEnabled(id: BoxId, isEnabled: Boolean): Completable {
 
-        /**
-         * TODO if [isEnabled] = true --> synchronize with Leaderbox too!
-         * TODO Clean up this implementation!
-         */
+        findBoxById(id)?.isEnabled = isEnabled
 
-        return completableOf {
-            findBoxById(id)
-                ?.let { box ->
-                    box.isEnabled = isEnabled
-                }
-                ?: throw IllegalStateException("Box with $id not found")
-
-            if (isEnabled) {
-                forceBoxSynchronization().blockingAwait()
-            }
+        return if (isEnabled) {
+            forceBoxSynchronization()
+        } else {
+            Completable.complete()
         }
     }
 
-    private fun findBoxById(id: BoxId): Box<E>? {
+    private fun findBoxById(id: BoxId?): Box<E>? {
         return boxes
             .find { box ->
                 box.id == id

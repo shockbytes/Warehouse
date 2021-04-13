@@ -1,7 +1,9 @@
 package at.shockbytes.warehouse.box
 
+import at.shockbytes.warehouse.sync.MigrationAction
 import at.shockbytes.warehouse.ledger.BoxOperation
 import at.shockbytes.warehouse.ledger.Hash
+import at.shockbytes.warehouse.ledger.Ledger
 import at.shockbytes.warehouse.state.box.BoxActivationDelegate
 import at.shockbytes.warehouse.state.head.TransientLedgerHeadState
 import at.shockbytes.warehouse.state.head.LedgerHeadState
@@ -61,6 +63,27 @@ class Box<E>(
                 operation.perform(this)
             }
             .concatAll()
+    }
+
+    /**
+     * A migration is required in case that there is data stored in the engine, but the ledger
+     * says that there should be no data available --> Data is available from previous installation.
+     */
+    fun requiresMigration(ledger: Ledger<E>): Single<MigrationAction<E>> {
+        return Observable
+            .zip(
+                boxEngine.getAll(),
+                ledger.isEmpty.toObservable(),
+                { data: List<E>, isLedgerEmpty: Boolean ->
+
+                    if (data.isNotEmpty() && isLedgerEmpty) {
+                        MigrationAction.Migration(BoxOperation.MigrateOperation(data))
+                    } else {
+                        MigrationAction.NoMigration()
+                    }
+                }
+            )
+            .first(MigrationAction.NoMigration())
     }
 
     companion object {
