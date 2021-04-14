@@ -14,16 +14,25 @@ import io.reactivex.rxjava3.core.Observable
 class WarehouseImplementation<E> internal constructor(
     private val boxes: List<Box<E>>,
     private val ledger: Ledger<E>,
-    private val config: WarehouseConfiguration
+    private var config: WarehouseConfiguration
 ) : Warehouse<E> {
 
-    private val boxSync = BoxSync(config.leaderBoxId, boxes)
-    private val migrationHandler = MigrationHandler(findBoxById(config.migrationSource))
+    override val leaderBoxId: BoxId
+        get() = config.leaderBoxId
+
+    private val boxSync: BoxSync<E>
+        get() = BoxSync(config.leaderBoxId, boxes)
+
+    private val migrationHandler: MigrationHandler<E>
+        get() = MigrationHandler(findBoxById(config.migrationSource), config.leaderBoxId)
 
     init {
         // TODO .blockingAwait is not nice, how can we make this more beautiful?
-        migrationHandler.checkForMigrations(ledger, boxSync)
-            .blockingAwait()
+        migrationCheck().blockingAwait()
+    }
+
+    private fun migrationCheck(): Completable {
+        return migrationHandler.checkForMigrations(ledger, boxSync)
     }
 
     override fun forceBoxSynchronization(): Completable {
@@ -123,8 +132,18 @@ class WarehouseImplementation<E> internal constructor(
     /**
      * Enabling a box requires a synchronization afterwards
      */
-    override fun setBoxEnabled(id: BoxId, isEnabled: Boolean): Completable {
+    override fun updateBoxState(update: BoxUpdateAction): Completable {
+        return when (update) {
+            is BoxUpdateAction.ChangeActivationState -> {
+                handleActivationStateChanges(update.boxId, update.isEnabled)
+            }
+            is BoxUpdateAction.ChangeLeaderBox -> {
+                handleChangeLeaderBoxAction(update.newLeaderBoxId)
+            }
+        }
+    }
 
+    private fun handleActivationStateChanges(id: BoxId, isEnabled: Boolean): Completable {
         findBoxById(id)?.isEnabled = isEnabled
 
         return if (isEnabled) {
@@ -132,6 +151,19 @@ class WarehouseImplementation<E> internal constructor(
         } else {
             Completable.complete()
         }
+    }
+
+    private fun handleChangeLeaderBoxAction(newLeaderBoxId: BoxId): Completable {
+        config = config.copy(leaderBoxId = newLeaderBoxId)
+
+        // Always enable new leader
+        findBoxById(newLeaderBoxId)
+            ?.let { box ->
+                box.isEnabled = true
+            }
+            ?: throw IllegalStateException("There is no new leader")
+
+        return boxSync.synchronizeLeader(ledger)
     }
 
     private fun findBoxById(id: BoxId?): Box<E>? {

@@ -10,10 +10,12 @@ class Ledger<E> private constructor(
 
     private val ledgerEventSource = PublishSubject.create<LedgerBlock<E>>()
 
+    /**
+     * The ledger is empty if there are no blocks, or there is one InitOperation block
+     */
     val isEmpty: Single<Boolean>
         get() = ledgerEngine.entries()
             .map { blocks ->
-                // TODO Docs
                 blocks.isEmpty() || blocks.firstOrNull()?.data is BoxOperation.InitOperation
             }
 

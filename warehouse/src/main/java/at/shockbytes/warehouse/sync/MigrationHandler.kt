@@ -1,11 +1,15 @@
 package at.shockbytes.warehouse.sync
 
 import at.shockbytes.warehouse.box.Box
+import at.shockbytes.warehouse.box.BoxId
 import at.shockbytes.warehouse.ledger.Ledger
 import at.shockbytes.warehouse.util.asCompletable
 import io.reactivex.rxjava3.core.Completable
 
-class MigrationHandler<E>(private val migrationBox: Box<E>?) {
+class MigrationHandler<E>(
+    private val migrationBox: Box<E>?,
+    private val leaderBoxId: BoxId
+) {
 
     /**
      * 1.) Check if the box from config.migrationSource requires a migration
@@ -16,7 +20,7 @@ class MigrationHandler<E>(private val migrationBox: Box<E>?) {
     fun checkForMigrations(ledger: Ledger<E>, boxSync: BoxSync<E>): Completable {
 
         // There might be no migrationBox, that's okay
-        return if (migrationBox != null) {
+        return if (migrationBox != null && migrationBox.id != leaderBoxId) {
             migrationBox.requiresMigration(ledger) // 1.
                 .flatMapCompletable { action: MigrationAction<E> ->
                     handleMigrationAction(action, ledger, boxSync)
@@ -36,11 +40,12 @@ class MigrationHandler<E>(private val migrationBox: Box<E>?) {
                 ledger.storeOperation(action.migrationOperation).asCompletable() // 2.
                     .andThen(boxSync.synchronizeLeader(ledger)) // 3.
                     .andThen(
+                        // 4.
                         boxSync.syncWithLedger(
                             ledger,
                             exceptMigrationSource = migrationBox
                         )
-                    ) // 4.
+                    )
             }
             is MigrationAction.NoMigration -> Completable.complete()
         }

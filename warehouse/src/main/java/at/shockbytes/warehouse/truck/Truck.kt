@@ -6,7 +6,7 @@ package at.shockbytes.warehouse.truck
  *
  * This class can be used to perform side effects every time new data arrives.
  *
- * TODO Docs
+ * Still under active development
  */
 interface Truck<T> {
 

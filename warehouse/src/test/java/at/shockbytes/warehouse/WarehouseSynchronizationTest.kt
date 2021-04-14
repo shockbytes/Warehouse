@@ -44,7 +44,12 @@ class WarehouseSynchronizationTest {
     @Test
     fun `test disable box and fill other box with data`() {
 
-        warehouse.setBoxEnabled(BoxId.of("in-memory.2"), isEnabled = false).blockingAwait()
+        warehouse.updateBoxState(
+            BoxUpdateAction.ChangeActivationState(
+                BoxId.of("in-memory.2"),
+                isEnabled = false
+            )
+        ).blockingAwait()
 
         warehouse.store(testData[0]).blockingAwait()
         warehouse.store(testData[1]).blockingAwait()
@@ -66,12 +71,22 @@ class WarehouseSynchronizationTest {
     @Test
     fun `test disable box and enabled after first two fills`() {
 
-        warehouse.setBoxEnabled(BoxId.of("in-memory.2"), isEnabled = false).blockingAwait()
+        warehouse.updateBoxState(
+            BoxUpdateAction.ChangeActivationState(
+                BoxId.of("in-memory.2"),
+                isEnabled = false
+            )
+        ).blockingAwait()
 
         warehouse.store(testData[0]).blockingAwait()
         warehouse.store(testData[1]).blockingAwait()
 
-        warehouse.setBoxEnabled(BoxId.of("in-memory.2"), isEnabled = true).blockingAwait()
+        warehouse.updateBoxState(
+            BoxUpdateAction.ChangeActivationState(
+                BoxId.of("in-memory.2"),
+                isEnabled = true
+            )
+        ).blockingAwait()
 
         warehouse.store(testData[2]).blockingAwait()
 
@@ -91,14 +106,29 @@ class WarehouseSynchronizationTest {
     @Test
     fun `test enable box, then disable, then enabled afterwards`() {
 
-        warehouse.setBoxEnabled(BoxId.of("in-memory.2"), isEnabled = true).blockingAwait()
+        warehouse.updateBoxState(
+            BoxUpdateAction.ChangeActivationState(
+                BoxId.of("in-memory.2"),
+                isEnabled = true
+            )
+        ).blockingAwait()
 
         warehouse.store(testData[0]).blockingAwait()
-        warehouse.setBoxEnabled(BoxId.of("in-memory.2"), isEnabled = false).blockingAwait()
+        warehouse.updateBoxState(
+            BoxUpdateAction.ChangeActivationState(
+                BoxId.of("in-memory.2"),
+                isEnabled = false
+            )
+        ).blockingAwait()
 
         warehouse.store(testData[1]).blockingAwait()
         warehouse.store(testData[2]).blockingAwait()
-        warehouse.setBoxEnabled(BoxId.of("in-memory.2"), isEnabled = true).blockingAwait()
+        warehouse.updateBoxState(
+            BoxUpdateAction.ChangeActivationState(
+                BoxId.of("in-memory.2"),
+                isEnabled = true
+            )
+        ).blockingAwait()
 
         warehouse[BoxId.of("in-memory.1")]
             .test()

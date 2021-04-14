@@ -8,6 +8,8 @@ import io.reactivex.rxjava3.core.Observable
 
 interface Warehouse<E> {
 
+    val leaderBoxId: BoxId
+
     fun store(
         value: E,
         writePredicate: (Box<E>) -> Boolean = { true }
@@ -31,7 +33,7 @@ interface Warehouse<E> {
 
     fun reset(): Completable
 
-    fun setBoxEnabled(id: BoxId, isEnabled: Boolean): Completable
+    fun updateBoxState(update: BoxUpdateAction): Completable
 
     fun forceBoxSynchronization(): Completable
 

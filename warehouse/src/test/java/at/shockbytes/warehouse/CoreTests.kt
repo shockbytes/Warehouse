@@ -7,7 +7,7 @@ import org.junit.runners.Suite
 @Suite.SuiteClasses(
     BoxSyncTest::class,
     LedgerTest::class,
-    WarehouseTest::class,
+    WarehouseLeaderBoxSwitchTest::class,
     WarehouseSynchronizationTest::class,
     WarehouseMigrationTest::class
 )
