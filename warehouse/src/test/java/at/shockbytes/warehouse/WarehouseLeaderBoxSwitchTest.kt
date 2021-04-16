@@ -42,7 +42,6 @@ class WarehouseLeaderBoxSwitchTest {
         )
     }
 
-
     @Test
     fun `test switch leader box while both boxes are enabled`() {
 

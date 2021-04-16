@@ -1,20 +1,22 @@
-package at.shockbytes.warehouse
+package at.shockbytes.warehouse.ledger
 
-import at.shockbytes.warehouse.ledger.BoxOperation
-import at.shockbytes.warehouse.ledger.Hash
-import at.shockbytes.warehouse.ledger.Ledger
-import at.shockbytes.warehouse.ledger.LedgerBlock
 import at.shockbytes.warehouse.model.Content
 import org.junit.Before
 import org.junit.Test
 
-class LedgerTest {
+class PersistentLedgerEngineTest {
 
     private lateinit var ledger: Ledger<Content>
 
     @Before
     fun setup() {
-        ledger = Ledger.inMemory()
+        ledger = Ledger.fromEngine(
+            PersistentLedgerEngine(
+                head = DummyPersistentLedgerSource(),
+                chain = DummyPersistentLedgerSource(),
+                mapper = ContentLedgerMapper()
+            )
+        )
     }
 
     @Test

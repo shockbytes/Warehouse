@@ -52,6 +52,10 @@ class Ledger<E> private constructor(
 
     companion object {
 
+        fun <E> fromEngine(engine: LedgerEngine<E>): Ledger<E> {
+            return Ledger(engine)
+        }
+
         fun <E> inMemory(): Ledger<E> {
             return Ledger(InMemoryLedgerEngine())
         }

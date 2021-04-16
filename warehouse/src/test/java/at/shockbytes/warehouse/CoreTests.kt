@@ -1,5 +1,7 @@
 package at.shockbytes.warehouse
 
+import at.shockbytes.warehouse.ledger.LedgerTest
+import at.shockbytes.warehouse.ledger.PersistentLedgerEngineTest
 import org.junit.runner.RunWith
 import org.junit.runners.Suite
 
@@ -9,6 +11,7 @@ import org.junit.runners.Suite
     LedgerTest::class,
     WarehouseLeaderBoxSwitchTest::class,
     WarehouseSynchronizationTest::class,
-    WarehouseMigrationTest::class
+    WarehouseMigrationTest::class,
+    PersistentLedgerEngineTest::class
 )
 class CoreTests
