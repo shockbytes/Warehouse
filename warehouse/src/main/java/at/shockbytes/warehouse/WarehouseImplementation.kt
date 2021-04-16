@@ -45,6 +45,7 @@ class WarehouseImplementation<E> internal constructor(
     ): Completable {
         return performCompletableWriteBoxAction(writePredicate) { box ->
             box.store(value)
+                // TODO This is misplaced here!
                 .andThen(ledger.storeOperation(BoxOperation.StoreOperation(value)))
                 .doOnSuccess(box::updateHash)
                 .asCompletable()
@@ -57,6 +58,7 @@ class WarehouseImplementation<E> internal constructor(
     ): Completable {
         return performCompletableWriteBoxAction(writePredicate) { box ->
             box.update(value)
+                // TODO This is misplaced here!
                 .andThen(ledger.storeOperation(BoxOperation.UpdateOperation(value)))
                 .doOnSuccess(box::updateHash)
                 .asCompletable()
@@ -69,6 +71,7 @@ class WarehouseImplementation<E> internal constructor(
     ): Completable {
         return performCompletableWriteBoxAction(writePredicate) { box ->
             box.delete(value)
+                // TODO This is misplaced here!
                 .andThen(ledger.storeOperation(BoxOperation.DeleteOperation(value)))
                 .doOnSuccess(box::updateHash)
                 .asCompletable()

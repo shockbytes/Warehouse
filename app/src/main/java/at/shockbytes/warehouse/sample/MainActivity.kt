@@ -16,16 +16,21 @@ import at.shockbytes.warehouse.box.BoxId
 import at.shockbytes.warehouse.box.log.LogBoxEngine
 import at.shockbytes.warehouse.box.memory.InMemoryBoxEngine
 import at.shockbytes.warehouse.firebase.FirebaseBoxEngine
+import at.shockbytes.warehouse.ledger.FileBasedPersistentLedgerSource
 import at.shockbytes.warehouse.ledger.Ledger
+import at.shockbytes.warehouse.ledger.PersistentLedgerEngine
+import at.shockbytes.warehouse.ledger.PersistentLedgerSource
 import at.shockbytes.warehouse.realm.RealmBoxEngine
 import at.shockbytes.warehouse.realm.RealmIdSelector
 import at.shockbytes.warehouse.sample.realm.RealmMessageMapper
 import com.google.firebase.database.FirebaseDatabase
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.addTo
 import io.realm.Realm
 import io.realm.RealmConfiguration
 import timber.log.Timber
+import java.io.File
 import java.lang.Math.random
 
 class MainActivity : AppCompatActivity() {
@@ -36,6 +41,9 @@ class MainActivity : AppCompatActivity() {
 
     private val rvLedger: RecyclerView
         get() = findViewById(R.id.rv_ledger)
+
+    private val rvContent: RecyclerView
+        get() = findViewById(R.id.rv_box_content)
 
     private val config: RealmConfiguration by lazy {
         RealmConfiguration.Builder()
@@ -60,8 +68,24 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupWarehouse() {
         val sharedLedger = Ledger.inMemory<Message>()
+
+        /*
+        val sharedLedger = Ledger.fromEngine<Message>(
+            PersistentLedgerEngine(
+                chain = FileBasedPersistentLedgerSource(
+                    file = filesDir.child("chain.lef"),
+                ),
+                head = FileBasedPersistentLedgerSource(
+                    file = filesDir.child("head.lef"),
+                ),
+                mapper = PersistentLedgerMessageMapper()
+            )
+        )
+        */
+
         warehouse = Warehouse.new(
             boxes = listOf(
+                /*
                 Box.defaultFrom(
                     RealmBoxEngine.fromRealm(
                         config,
@@ -72,6 +96,7 @@ class MainActivity : AppCompatActivity() {
                         )
                     ),
                 ),
+                */
                 Box.defaultFrom(
                     LogBoxEngine.withTag("LogBox"),
                 ),
@@ -93,9 +118,12 @@ class MainActivity : AppCompatActivity() {
         )
 
         sharedLedger.onLedgerEvents()
+            .observeOn(AndroidSchedulers.mainThread())
             .subscribe { block ->
-                (rvLedger.adapter as LedgerAdapter).add(block)
-                rvLedger.smoothScrollToPosition(rvLedger.adapter!!.itemCount - 1)
+                (rvLedger.adapter as LedgerAdapter).apply {
+                    add(block)
+                    rvLedger.smoothScrollToPosition(itemCount - 1)
+                }
             }
     }
 
@@ -104,6 +132,20 @@ class MainActivity : AppCompatActivity() {
             layoutManager = LinearLayoutManager(applicationContext)
             adapter = LedgerAdapter(mutableListOf())
         }
+
+        rvContent.apply {
+            layoutManager = LinearLayoutManager(applicationContext)
+            adapter = ContentAdapter(mutableListOf())
+        }
+
+        warehouse.getAll()
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe { messages ->
+                (rvContent.adapter as ContentAdapter).apply {
+                    setData(messages)
+                    rvContent.smoothScrollToPosition(itemCount - 1)
+                }
+            }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -185,5 +227,11 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         compositeDisposable.clear()
+    }
+}
+
+private fun File.child(child: String): File {
+    return File(this.absolutePath + "/" + child).apply {
+        createNewFile()
     }
 }

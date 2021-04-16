@@ -139,7 +139,8 @@ There are a bunch of things that make this library not even suitable for a hobby
 -[ ] Test coverage
 -[ ] Tests for FirebaseBox
 -[ ] Tests for RealmBox
--[ ] Tests for InMemoryBox
+-[ ] Tests for Ledger
+-[x] Tests for InMemoryBox
 
 ### Box issues
 -[x] Initial box synchronization
@@ -154,7 +155,8 @@ There are a bunch of things that make this library not even suitable for a hobby
 -[x] Final Warehouse API
 -[x] Reset boxes
 -[x] Enable/Disable boxes on the go
--[ ] Switch leading boxes on the go
+-[x] Switch leading boxes on the go
+-[x] Persist Ledger on disk
 
 ### Supported BoxEngines
 

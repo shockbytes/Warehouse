@@ -17,7 +17,7 @@ class PersistentLedgerEngine<E>(
     }
 
     override val last: LedgerBlock<E>
-        get() = mapper.mapTo(head.firstLine())
+        get() = head.firstLine().let(mapper::mapTo)
 
     private val lastHash: String
         get() = last.hash.value
@@ -35,8 +35,7 @@ class PersistentLedgerEngine<E>(
 
     override fun store(operation: BoxOperation<E>): Completable {
         return completableOf {
-            val block = LedgerBlock(lastHash, operation)
-            storeBlock(block)
+            storeBlock(LedgerBlock(lastHash, operation))
         }
     }
 

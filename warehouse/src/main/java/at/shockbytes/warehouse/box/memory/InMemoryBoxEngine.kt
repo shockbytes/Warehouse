@@ -10,6 +10,7 @@ import at.shockbytes.warehouse.util.indexOfFirstOrNull
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
+import io.reactivex.rxjava3.subjects.BehaviorSubject
 import java.lang.IllegalStateException
 
 class InMemoryBoxEngine<I, E, ID> private constructor(
@@ -20,6 +21,8 @@ class InMemoryBoxEngine<I, E, ID> private constructor(
 ) : BoxEngine<I, E> {
 
     private val storage: MutableList<I> = mutableListOf()
+
+    private val publisher: BehaviorSubject<List<I>> = BehaviorSubject.create()
 
     init {
         storage.addAll(mapper.mapListFrom(initialData))
@@ -33,8 +36,7 @@ class InMemoryBoxEngine<I, E, ID> private constructor(
     }
 
     override fun getAll(): Observable<List<E>> {
-        return storage
-            .asObservable()
+        return publisher
             .map(mapper::mapListTo)
     }
 
@@ -42,6 +44,8 @@ class InMemoryBoxEngine<I, E, ID> private constructor(
         return completableOf {
             val internal = mapper.mapFrom(value)
             storage.add(internal)
+        }.doOnComplete {
+            publisher.onNext(storage)
         }
     }
 

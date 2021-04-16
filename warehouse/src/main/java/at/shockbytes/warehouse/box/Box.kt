@@ -92,7 +92,7 @@ class Box<E>(
             return Box(
                 boxEngine,
                 TransientLedgerHeadState(),
-                TransientBoxActivationDelegate(defaultValue = false)
+                TransientBoxActivationDelegate(defaultValue = true)
             )
         }
     }
