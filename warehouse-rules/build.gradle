@@ -1,7 +1,10 @@
 plugins {
     id 'java-library'
     id 'kotlin'
+    id 'com.github.dcendents.android-maven'
 }
+
+group='at.shockbytes.warehouse'
 
 dependencies {
 
