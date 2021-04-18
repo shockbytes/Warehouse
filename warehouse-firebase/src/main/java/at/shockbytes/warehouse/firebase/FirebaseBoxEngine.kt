@@ -14,6 +14,7 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject
 
 @BetaBox
 class FirebaseBoxEngine<I, E> protected constructor(
+    idName: String,
     private val database: FirebaseDatabase,
     private val reference: String,
     private val mapper: Mapper<I, E>,
@@ -33,7 +34,7 @@ class FirebaseBoxEngine<I, E> protected constructor(
         )
     }
 
-    override val id: BoxId = BoxId.of("firebase")
+    override val id: BoxId = BoxId.of(idName)
 
     override fun <ID> getElementForIdType(id: ID): Single<E> {
         return subject
@@ -68,7 +69,10 @@ class FirebaseBoxEngine<I, E> protected constructor(
 
     companion object {
 
+        const val DEFAULT_NAME = "firebase"
+
         inline fun <reified I, reified E> fromDatabase(
+            id: String = DEFAULT_NAME,
             database: FirebaseDatabase,
             reference: String,
             mapper: Mapper<I, E>,
@@ -76,6 +80,7 @@ class FirebaseBoxEngine<I, E> protected constructor(
             noinline cancelHandler: ((DatabaseError) -> Unit)? = null
         ): FirebaseBoxEngine<I, E> {
             return FirebaseBoxEngine(
+                id,
                 database,
                 reference,
                 mapper,

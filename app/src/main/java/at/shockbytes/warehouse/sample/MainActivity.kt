@@ -105,7 +105,8 @@ class MainActivity : AppCompatActivity() {
                 ),
                 Box.defaultFrom(
                     FirebaseBoxEngine.fromDatabase(
-                        FirebaseDatabase.getInstance().reference.database,
+                        id = "fb-messages",
+                        database = FirebaseDatabase.getInstance().reference.database,
                         reference = "/messages",
                         idSelector = { it.id },
                         cancelHandler = { error -> Timber.e(error.toException()) },
@@ -114,7 +115,7 @@ class MainActivity : AppCompatActivity() {
                 )
             ),
             sharedLedger,
-            WarehouseConfiguration(leaderBoxId = BoxId.of(InMemoryBoxEngine.NAME))
+            WarehouseConfiguration(leaderBoxId = BoxId.of("fb-messages"))
         )
 
         sharedLedger.onLedgerEvents()
@@ -143,7 +144,7 @@ class MainActivity : AppCompatActivity() {
             .subscribe { messages ->
                 (rvContent.adapter as ContentAdapter).apply {
                     setData(messages)
-                    rvContent.smoothScrollToPosition(itemCount - 1)
+                    rvContent.smoothScrollToPosition(messages.count() - 1)
                 }
             }
     }
