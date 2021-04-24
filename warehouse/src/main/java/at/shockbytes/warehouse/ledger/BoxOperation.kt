@@ -1,6 +1,7 @@
 package at.shockbytes.warehouse.ledger
 
 import at.shockbytes.warehouse.box.Box
+import at.shockbytes.warehouse.util.asCompletable
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.kotlin.concatAll
 import kotlinx.serialization.Serializable
@@ -25,7 +26,7 @@ sealed class BoxOperation<E> {
         val value: E,
         override val name: String = "store",
     ) : BoxOperation<E>() {
-        override fun perform(box: Box<E>): Completable = box.store(value)
+        override fun perform(box: Box<E>): Completable = box.store(value).asCompletable()
     }
 
     @Serializable
@@ -53,7 +54,7 @@ sealed class BoxOperation<E> {
             // TODO Let box store a list of values in a batch
             return values
                 .map { value ->
-                    box.store(value)
+                    box.store(value).asCompletable()
                 }
                 .concatAll()
         }

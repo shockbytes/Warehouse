@@ -24,7 +24,7 @@ class FileBoxEngine<I, E, ID> protected constructor(
         TODO("Not yet implemented")
     }
 
-    override fun store(value: E): Completable {
+    override fun store(value: E): Single<E> {
         TODO("Not yet implemented")
     }
 
@@ -36,7 +36,7 @@ class FileBoxEngine<I, E, ID> protected constructor(
         TODO("Not yet implemented")
     }
 
-    override fun <ID> getElementForIdType(id: ID): Single<E> {
+    override fun <ID> getElementForIdType(internalId: ID): Single<E> {
         TODO("Not yet implemented")
     }
 

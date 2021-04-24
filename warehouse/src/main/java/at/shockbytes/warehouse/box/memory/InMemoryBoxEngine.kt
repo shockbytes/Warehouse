@@ -4,9 +4,9 @@ import at.shockbytes.warehouse.IdentityMapper
 import at.shockbytes.warehouse.Mapper
 import at.shockbytes.warehouse.box.BoxEngine
 import at.shockbytes.warehouse.box.BoxId
-import at.shockbytes.warehouse.util.asObservable
 import at.shockbytes.warehouse.util.completableOf
 import at.shockbytes.warehouse.util.indexOfFirstOrNull
+import at.shockbytes.warehouse.util.singleOf
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
@@ -28,11 +28,11 @@ class InMemoryBoxEngine<I, E, ID> private constructor(
         storage.addAll(mapper.mapListFrom(initialData))
     }
 
-    override fun <ID> getElementForIdType(id: ID): Single<E> {
+    override fun <ID> getElementForIdType(internalId: ID): Single<E> {
         return storage
-            .find { value -> idSelector(value) == id }
+            .find { value -> idSelector(value) == internalId }
             ?.let { internal -> Single.just(mapper.mapTo(internal)) }
-            ?: Single.error(IllegalStateException("No value stored in ${this.id} for id $id"))
+            ?: Single.error(IllegalStateException("No value stored in ${this.id} for id $internalId"))
     }
 
     override fun getAll(): Observable<List<E>> {
@@ -40,11 +40,12 @@ class InMemoryBoxEngine<I, E, ID> private constructor(
             .map(mapper::mapListTo)
     }
 
-    override fun store(value: E): Completable {
-        return completableOf {
+    override fun store(value: E): Single<E> {
+        return singleOf {
             val internal = mapper.mapFrom(value)
             storage.add(internal)
-        }.doOnComplete {
+            mapper.mapTo(internal)
+        }.doOnSuccess {
             publisher.onNext(storage)
         }
     }

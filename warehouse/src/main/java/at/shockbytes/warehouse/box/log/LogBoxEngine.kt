@@ -14,8 +14,8 @@ class LogBoxEngine<I, E> private constructor(
 
     override val id: BoxId = BoxId.of(NAME)
 
-    override fun <ID> getElementForIdType(id: ID): Single<E> {
-        Log.d(tag, "Trying to get resource with id: $id")
+    override fun <ID> getElementForIdType(internalId: ID): Single<E> {
+        Log.d(tag, "Trying to get resource with id: $internalId")
         return Single.error(IllegalStateException("Cannot invoke this here..."))
     }
 
@@ -24,11 +24,10 @@ class LogBoxEngine<I, E> private constructor(
         return Observable.empty()
     }
 
-    override fun store(value: E): Completable {
+    override fun store(value: E): Single<E> {
         Log.e(tag, "Store $value in $id")
-        return Completable.fromCallable {
-            Log.d(DEFAULT_TAG, "Storing new value: $value")
-        }
+        Log.d(DEFAULT_TAG, "Storing new value: $value")
+        return Single.just(value)
     }
 
     override fun update(value: E): Completable {

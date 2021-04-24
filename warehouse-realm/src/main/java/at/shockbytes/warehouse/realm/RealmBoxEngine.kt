@@ -31,13 +31,13 @@ class RealmBoxEngine<I : RealmObject, E, ID> protected constructor(
 
     override val id: BoxId = BoxId.of(NAME)
 
-    override fun <ID> getElementForIdType(id: ID): Single<E> {
+    override fun <ID> getElementForIdType(internalId: ID): Single<E> {
         return Single.fromCallable {
             realm.where(storageClass)
-                .findValueById(id)
+                .findValueById(internalId)
                 .findFirst()
                 ?.let(mapper::mapTo)
-                ?: throw IllegalStateException("No value stored in ${this.id} for id $id")
+                ?: throw IllegalStateException("No value stored in ${this.id} for id $internalId")
         }
     }
 
@@ -51,10 +51,13 @@ class RealmBoxEngine<I : RealmObject, E, ID> protected constructor(
             .`as`(RxJavaBridge.toV3Observable())
     }
 
-    override fun store(value: E): Completable {
-        return completableOnDefaultThread {
-            realm.executeTransactionAsync { r ->
-                r.copyToRealmOrUpdate(mapper.mapFrom(value))
+    override fun store(value: E): Single<E> {
+        return Single.create { emitter ->
+            realm.executeTransaction { r ->
+
+                val stored = r.copyToRealmOrUpdate(mapper.mapFrom(value))
+
+                emitter.onSuccess(mapper.mapTo(stored))
             }
         }
     }

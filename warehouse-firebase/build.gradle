@@ -4,7 +4,7 @@ plugins {
     id 'com.github.dcendents.android-maven'
 }
 
-group='at.shockbytes.warehouse'
+group = 'at.shockbytes.warehouse'
 
 
 android {
@@ -37,7 +37,7 @@ android {
 }
 
 dependencies {
-    
+
     implementation project(path: ':warehouse')
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"

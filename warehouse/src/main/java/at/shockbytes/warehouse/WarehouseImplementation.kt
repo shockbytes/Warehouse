@@ -45,6 +45,7 @@ class WarehouseImplementation<E> internal constructor(
     ): Completable {
         return performCompletableWriteBoxAction(writePredicate) { box ->
             box.store(value)
+                .asCompletable()
                 // TODO This is misplaced here!
                 .andThen(ledger.storeOperation(BoxOperation.StoreOperation(value)))
                 .doOnSuccess(box::updateHash)

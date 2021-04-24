@@ -7,7 +7,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import at.shockbytes.warehouse.IdentityMapper
 import at.shockbytes.warehouse.R
 import at.shockbytes.warehouse.Warehouse
 import at.shockbytes.warehouse.WarehouseConfiguration
@@ -16,13 +15,9 @@ import at.shockbytes.warehouse.box.BoxId
 import at.shockbytes.warehouse.box.log.LogBoxEngine
 import at.shockbytes.warehouse.box.memory.InMemoryBoxEngine
 import at.shockbytes.warehouse.firebase.FirebaseBoxEngine
-import at.shockbytes.warehouse.ledger.FileBasedPersistentLedgerSource
+import at.shockbytes.warehouse.firebase.FirebaseBoxEngineConfiguration
 import at.shockbytes.warehouse.ledger.Ledger
-import at.shockbytes.warehouse.ledger.PersistentLedgerEngine
-import at.shockbytes.warehouse.ledger.PersistentLedgerSource
-import at.shockbytes.warehouse.realm.RealmBoxEngine
-import at.shockbytes.warehouse.realm.RealmIdSelector
-import at.shockbytes.warehouse.sample.realm.RealmMessageMapper
+import at.shockbytes.warehouse.sample.firebase.FirebaseMessageMapper
 import com.google.firebase.database.FirebaseDatabase
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
@@ -105,12 +100,14 @@ class MainActivity : AppCompatActivity() {
                 ),
                 Box.defaultFrom(
                     FirebaseBoxEngine.fromDatabase(
-                        id = "fb-messages",
-                        database = FirebaseDatabase.getInstance().reference.database,
-                        reference = "/messages",
-                        idSelector = { it.id },
+                        config = FirebaseBoxEngineConfiguration(
+                            database = FirebaseDatabase.getInstance().reference.database,
+                            reference = "/messages",
+                            id = BoxId.of("fb-messages")
+                        ),
                         cancelHandler = { error -> Timber.e(error.toException()) },
-                        mapper = IdentityMapper()
+                        idSelector = { it.id },
+                        mapper = FirebaseMessageMapper
                     ),
                 )
             ),

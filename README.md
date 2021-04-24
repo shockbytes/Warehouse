@@ -192,5 +192,6 @@ it should be possible to use Coroutines/Flow instead of solely relying on RxJava
 ### Proposed V2.0 changes
 - A single `Warehouse` can store an arbitrary amount of different data types, not just a single one.
 - Each box has an own Log and allows rollbacks to previous versions
+- Each box can migrate the internal datastructure (rename fields for example)
 - WarehouseAdapter (like Retrofit) to use either Flow/Coroutines or RxJava
 - READ/WRITE atomicity

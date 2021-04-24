@@ -39,7 +39,7 @@ class Box<E>(
 
     fun getAll(): Observable<List<E>> = boxEngine.getAll()
 
-    fun store(value: E): Completable {
+    fun store(value: E): Single<E> {
         return boxEngine.store(value)
     }
 

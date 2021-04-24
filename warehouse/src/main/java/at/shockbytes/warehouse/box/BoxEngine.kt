@@ -8,9 +8,9 @@ interface BoxEngine<I, E> {
 
     val id: BoxId
 
-    fun <ID> getElementForIdType(id: ID): Single<E>
+    fun <ID> getElementForIdType(internalId: ID): Single<E>
     fun getAll(): Observable<List<E>>
-    fun store(value: E): Completable
+    fun store(value: E): Single<E>
     fun update(value: E): Completable
     fun delete(value: E): Completable
     fun reset(): Completable

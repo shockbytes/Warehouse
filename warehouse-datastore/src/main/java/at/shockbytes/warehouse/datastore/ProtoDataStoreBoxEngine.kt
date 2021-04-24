@@ -32,7 +32,7 @@ class ProtoDataStoreBoxEngine<I, E, ID>(
 
     override val id: BoxId = BoxId.of("preferences-data-store-android")
 
-    override fun <ID> getElementForIdType(id: ID): Single<E> {
+    override fun <ID> getElementForIdType(internalId: ID): Single<E> {
         TODO("Not yet implemented")
     }
 
@@ -40,7 +40,7 @@ class ProtoDataStoreBoxEngine<I, E, ID>(
         TODO("Not yet implemented")
     }
 
-    override fun store(value: E): Completable {
+    override fun store(value: E): Single<E> {
         TODO("Not yet implemented")
     }
 

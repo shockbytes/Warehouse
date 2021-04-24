@@ -4,7 +4,6 @@ import at.shockbytes.warehouse.Mapper
 import at.shockbytes.warehouse.box.BoxEngine
 import at.shockbytes.warehouse.box.BoxId
 import at.shockbytes.warehouse.rules.BetaBox
-import at.shockbytes.warehouse.util.completableOf
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import io.reactivex.rxjava3.core.Completable
@@ -13,15 +12,16 @@ import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.subjects.BehaviorSubject
 
 @BetaBox
-class FirebaseBoxEngine<I, E> protected constructor(
-    idName: String,
-    private val database: FirebaseDatabase,
-    private val reference: String,
+class FirebaseBoxEngine<I : FirebaseStorable, E> protected constructor(
+    private val config: FirebaseBoxEngineConfiguration,
     private val mapper: Mapper<I, E>,
     clazz: Class<I>,
     private val idSelector: (I) -> String,
     cancelHandler: ((DatabaseError) -> Unit)?
 ) : BoxEngine<I, E> {
+
+    private val database: FirebaseDatabase = config.database
+    private val reference: String = config.reference
 
     private val subject = BehaviorSubject.create<List<I>>()
 
@@ -34,25 +34,35 @@ class FirebaseBoxEngine<I, E> protected constructor(
         )
     }
 
-    override val id: BoxId = BoxId.of(idName)
+    override val id: BoxId = config.id
 
-    override fun <ID> getElementForIdType(id: ID): Single<E> {
-        return subject
-            .map { values ->
-                values
-                    .find { v -> id == idSelector(v) }
-                    ?.let(mapper::mapTo)
-                    ?: error("There are no values in ${this.id} with id: $id")
+    override fun <ID> getElementForIdType(internalId: ID): Single<E> {
+        return subject.value
+            .find { v ->
+                internalId == idSelector(v)
             }
-            .singleOrError()
+            ?.let { internal ->
+                Single.just(mapper.mapTo(internal))
+            }
+            ?: error("There are no values in ${this.id} with id: $internalId")
     }
 
     override fun getAll(): Observable<List<E>> = subject.map(mapper::mapListTo)
 
-    override fun store(value: E): Completable {
-        return completableOf {
-            database.insertValue(reference, value)
+    override fun store(value: E): Single<E> {
+
+        val internalRepresentation = mapper.mapFrom(value)
+        val id = idSelector(internalRepresentation)
+
+        val storeAction = if (config.useDefaultFirebaseId) {
+            database.insertValueWithDefaultId(reference, internalRepresentation)
+
+        } else {
+            database.insertValueWithId(reference, internalRepresentation, id)
         }
+
+        return storeAction
+            .map(mapper::mapTo)
     }
 
     override fun update(value: E): Completable {
@@ -69,20 +79,14 @@ class FirebaseBoxEngine<I, E> protected constructor(
 
     companion object {
 
-        const val DEFAULT_NAME = "firebase"
-
-        inline fun <reified I, reified E> fromDatabase(
-            id: String = DEFAULT_NAME,
-            database: FirebaseDatabase,
-            reference: String,
+        inline fun <reified I : FirebaseStorable, reified E> fromDatabase(
             mapper: Mapper<I, E>,
             noinline idSelector: (I) -> String,
+            config: FirebaseBoxEngineConfiguration,
             noinline cancelHandler: ((DatabaseError) -> Unit)? = null
         ): FirebaseBoxEngine<I, E> {
             return FirebaseBoxEngine(
-                id,
-                database,
-                reference,
+                config,
                 mapper,
                 I::class.java,
                 idSelector,

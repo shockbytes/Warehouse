@@ -7,6 +7,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import io.reactivex.rxjava3.core.Completable
+import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.subjects.Subject
 
 fun <T, K> Subject<List<T>>.fromFirebase(
@@ -78,8 +79,37 @@ inline fun <T, K> DatabaseReference.listen(
 fun <T> FirebaseDatabase.insertValue(
     reference: String,
     value: T
-) {
-    getReference(reference).push().setValue(value)
+): Completable {
+    return getReference(reference)
+        .push()
+        .setValue(value)
+        .toCompletable()
+}
+
+fun <T : FirebaseStorable> FirebaseDatabase.insertValueWithDefaultId(
+    reference: String,
+    value: T
+): Single<T> {
+
+    val newReference = getReference(reference).push()
+    val id =
+        newReference.key ?: throw IllegalStateException("Cannot insert value $value into firebase!")
+
+    val updatedValue = value.copyWithNewId(newId = id) as T
+    return newReference
+        .setValue(updatedValue)
+        .toSingle(updatedValue)
+}
+
+fun <T> FirebaseDatabase.insertValueWithId(
+    reference: String,
+    value: T,
+    id: String
+): Single<T> {
+    return getReference(reference)
+        .child(id)
+        .setValue(value)
+        .toSingle(value)
 }
 
 fun <T> FirebaseDatabase.updateValue(reference: String, childId: String, value: T): Completable {
@@ -107,6 +137,18 @@ private fun <T> Task<T>.toCompletable(): Completable {
         this
             .addOnSuccessListener {
                 emitter.onComplete()
+            }
+            .addOnFailureListener { exception ->
+                emitter.onError(exception)
+            }
+    }
+}
+
+fun <T> Task<*>.toSingle(withValue: T): Single<T> {
+    return Single.create { emitter ->
+        this
+            .addOnSuccessListener {
+                emitter.onSuccess(withValue)
             }
             .addOnFailureListener { exception ->
                 emitter.onError(exception)
