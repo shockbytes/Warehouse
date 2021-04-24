@@ -3,7 +3,6 @@ package at.shockbytes.warehouse.realm
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import at.shockbytes.warehouse.TestActivity
 import at.shockbytes.warehouse.box.Box
 import at.shockbytes.warehouse.realm.model.RealmTestContentMapper
 import at.shockbytes.warehouse.realm.model.TestContent
@@ -40,16 +39,12 @@ class AndroidRealmBoxTest {
     @Test
     fun test() {
 
-        val scenario = ActivityScenario.launch(TestActivity::class.java)
+        box.store(TestContent(id = 12, content = "This is a content")).blockingGet()
 
-        scenario.onActivity {
+        box.getAll()
+            .test()
+            .assertValueAt(0, listOf())
+            .assertValueAt(1, listOf(TestContent(id = 12, content = "This is a content")))
 
-            box.store(TestContent(id = 12, content = "This is a content")).blockingAwait()
-
-            box.getAll()
-                .test()
-                .assertValueAt(0, listOf())
-                .assertValueAt(1, listOf(TestContent(id = 12, content = "This is a content")))
-        }
     }
 }
