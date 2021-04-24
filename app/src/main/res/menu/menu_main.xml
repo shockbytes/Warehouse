@@ -4,4 +4,5 @@
 
     <item android:title="Create" android:id="@+id/menu_create" />
     <item android:title="Delete" android:id="@+id/menu_delete"/>
+    <item android:title="Reset all boxes" android:id="@+id/menu_reset"/>
 </menu>

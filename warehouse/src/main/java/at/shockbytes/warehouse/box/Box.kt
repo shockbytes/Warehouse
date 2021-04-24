@@ -8,6 +8,7 @@ import at.shockbytes.warehouse.state.box.TransientBoxActivationDelegate
 import at.shockbytes.warehouse.state.head.LedgerHeadState
 import at.shockbytes.warehouse.state.head.TransientLedgerHeadState
 import at.shockbytes.warehouse.sync.MigrationAction
+import at.shockbytes.warehouse.util.asCompletable
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
@@ -41,6 +42,14 @@ class Box<E>(
 
     fun store(value: E): Single<E> {
         return boxEngine.store(value)
+    }
+
+    fun storeBatch(values: List<E>): Completable {
+        return values
+            .map { value ->
+                boxEngine.store(value).asCompletable()
+            }
+            .concatAll()
     }
 
     fun update(value: E): Completable {

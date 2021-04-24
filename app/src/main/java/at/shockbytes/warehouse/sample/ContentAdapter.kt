@@ -16,6 +16,10 @@ class ContentAdapter(
         notifyItemInserted(data.size - 1)
     }
 
+    fun lastItem(): Message {
+        return data.last()
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LedgerViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.content_item, parent, false)
         return LedgerViewHolder(view)

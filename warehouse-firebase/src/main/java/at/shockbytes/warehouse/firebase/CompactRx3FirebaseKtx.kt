@@ -1,5 +1,6 @@
 package at.shockbytes.warehouse.firebase
 
+import android.util.Log
 import com.google.android.gms.tasks.Task
 import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
@@ -61,7 +62,7 @@ inline fun <T, K> DatabaseReference.listen(
         }
 
         override fun onChildRemoved(dataSnapshot: DataSnapshot) {
-
+            Log.e("FIREBASE", "Value removed ${dataSnapshot.value}")
             dataSnapshot.getValue(clazz)?.let { value ->
                 cache.remove(value)
                 relay.onNext(cache)

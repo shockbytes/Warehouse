@@ -3,12 +3,15 @@ package at.shockbytes.warehouse
 import at.shockbytes.warehouse.box.Box
 import at.shockbytes.warehouse.box.BoxId
 import at.shockbytes.warehouse.ledger.BoxOperation
+import at.shockbytes.warehouse.ledger.Hash
 import at.shockbytes.warehouse.ledger.Ledger
 import at.shockbytes.warehouse.sync.BoxSync
 import at.shockbytes.warehouse.sync.MigrationHandler
 import at.shockbytes.warehouse.util.asCompletable
+import at.shockbytes.warehouse.util.completableOf
 import at.shockbytes.warehouse.util.merge
 import io.reactivex.rxjava3.core.Completable
+import io.reactivex.rxjava3.core.CompletableSource
 import io.reactivex.rxjava3.core.Observable
 
 class WarehouseImplementation<E> internal constructor(
@@ -44,13 +47,8 @@ class WarehouseImplementation<E> internal constructor(
         writePredicate: (Box<E>) -> Boolean
     ): Completable {
         return performCompletableWriteBoxAction(writePredicate) { box ->
-            box.store(value)
-                .asCompletable()
-                // TODO This is misplaced here!
-                .andThen(ledger.storeOperation(BoxOperation.StoreOperation(value)))
-                .doOnSuccess(box::updateHash)
-                .asCompletable()
-        }
+            box.store(value).asCompletable()
+        }.andThen(updateLedger(BoxOperation.StoreOperation(value)))
     }
 
     override fun update(
@@ -59,11 +57,7 @@ class WarehouseImplementation<E> internal constructor(
     ): Completable {
         return performCompletableWriteBoxAction(writePredicate) { box ->
             box.update(value)
-                // TODO This is misplaced here!
-                .andThen(ledger.storeOperation(BoxOperation.UpdateOperation(value)))
-                .doOnSuccess(box::updateHash)
-                .asCompletable()
-        }
+        }.andThen(updateLedger(BoxOperation.UpdateOperation(value)))
     }
 
     override fun delete(
@@ -72,11 +66,22 @@ class WarehouseImplementation<E> internal constructor(
     ): Completable {
         return performCompletableWriteBoxAction(writePredicate) { box ->
             box.delete(value)
-                // TODO This is misplaced here!
-                .andThen(ledger.storeOperation(BoxOperation.DeleteOperation(value)))
-                .doOnSuccess(box::updateHash)
-                .asCompletable()
-        }
+        }.andThen(updateLedger(BoxOperation.DeleteOperation(value)))
+    }
+
+    private fun updateLedger(operation: BoxOperation<E>): CompletableSource {
+        return ledger.storeOperation(operation)
+            .flatMapCompletable(::updateHashOfAllBoxes)
+    }
+
+    private fun updateHashOfAllBoxes(hash: Hash): Completable {
+        return boxes
+            .map { box ->
+                completableOf {
+                    box.updateHash(hash)
+                }
+            }
+            .merge()
     }
 
     private fun performCompletableWriteBoxAction(
@@ -99,9 +104,6 @@ class WarehouseImplementation<E> internal constructor(
             ?: Observable.empty()
     }
 
-    /**
-     * TODO This needs to be REAL reactive - check this
-     */
     override fun getAll(): Observable<List<E>> {
         val readPredicate: (Box<E>) -> Boolean = { box -> box.id == config.leaderBoxId }
         return performObservableReadBoxAction(readPredicate) { box ->
@@ -131,6 +133,7 @@ class WarehouseImplementation<E> internal constructor(
                 box.reset()
             }
             .merge()
+            .andThen(ledger.storeOperation(BoxOperation.ResetOperation()).asCompletable())
     }
 
     /**

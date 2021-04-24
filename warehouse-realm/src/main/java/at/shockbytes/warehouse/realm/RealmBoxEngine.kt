@@ -4,8 +4,6 @@ import at.shockbytes.warehouse.Mapper
 import at.shockbytes.warehouse.box.BoxEngine
 import at.shockbytes.warehouse.box.BoxId
 import at.shockbytes.warehouse.rules.BetaBox
-import at.shockbytes.warehouse.util.completableOf
-import at.shockbytes.warehouse.util.completableOnDefaultThread
 import hu.akarnokd.rxjava3.bridge.RxJavaBridge
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
@@ -14,7 +12,7 @@ import io.realm.Realm
 import io.realm.RealmConfiguration
 import io.realm.RealmObject
 import io.realm.RealmQuery
-import java.lang.IllegalStateException
+import kotlin.IllegalStateException
 
 /**
  * Still to do:
@@ -35,7 +33,7 @@ class RealmBoxEngine<I : RealmObject, E, ID> protected constructor(
         return Single.fromCallable {
             realm.where(storageClass)
                 .findValueById(internalId)
-                .findFirst()
+                .findFirstAsync()
                 ?.let(mapper::mapTo)
                 ?: throw IllegalStateException("No value stored in ${this.id} for id $internalId")
         }
@@ -53,7 +51,7 @@ class RealmBoxEngine<I : RealmObject, E, ID> protected constructor(
 
     override fun store(value: E): Single<E> {
         return Single.create { emitter ->
-            realm.executeTransaction { r ->
+            realm.executeTransactionAsync { r ->
 
                 val stored = r.copyToRealmOrUpdate(mapper.mapFrom(value))
 
@@ -63,26 +61,33 @@ class RealmBoxEngine<I : RealmObject, E, ID> protected constructor(
     }
 
     override fun update(value: E): Completable {
-        return completableOnDefaultThread {
-            realm.executeTransaction { r ->
+        return Completable.create { emitter ->
+            realm.executeTransactionAsync { r ->
                 r.where(storageClass)
                     .findValue(value)
-                    .findFirst()
+                    .findFirstAsync()
                     ?.let {
                         // Value exists, safe to overwrite with new data
                         r.copyToRealmOrUpdate(mapper.mapFrom(value))
                     }
+                emitter.onComplete()
             }
         }
     }
 
     override fun delete(value: E): Completable {
-        return completableOnDefaultThread {
+        return Completable.create { emitter ->
             realm.executeTransaction { realm ->
-                realm.where(storageClass)
+                val realmValue = realm.where(storageClass)
                     .findValue(value)
-                    .findFirst()
-                    ?.deleteFromRealm()
+                    .findFirstAsync()
+
+                if (realmValue != null) {
+                    realmValue.deleteFromRealm()
+                    emitter.onComplete()
+                } else {
+                    emitter.onError(IllegalStateException("Value $value not found. Could not delete object!"))
+                }
             }
         }
     }
@@ -96,9 +101,10 @@ class RealmBoxEngine<I : RealmObject, E, ID> protected constructor(
     }
 
     override fun reset(): Completable {
-        return completableOf {
-            realm.executeTransaction { realm ->
+        return Completable.create { emitter ->
+            realm.executeTransactionAsync { realm ->
                 realm.deleteAll()
+                emitter.onComplete()
             }
         }
     }

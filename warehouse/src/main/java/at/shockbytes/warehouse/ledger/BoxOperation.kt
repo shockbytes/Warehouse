@@ -46,17 +46,17 @@ sealed class BoxOperation<E> {
     }
 
     @Serializable
+    data class ResetOperation<E>(
+        override val name: String = "reset"
+    ): BoxOperation<E>() {
+        override fun perform(box: Box<E>): Completable = box.reset()
+    }
+
+    @Serializable
     data class MigrateOperation<E>(
         val values: List<E>,
         override val name: String = "migrate",
     ) : BoxOperation<E>() {
-        override fun perform(box: Box<E>): Completable {
-            // TODO Let box store a list of values in a batch
-            return values
-                .map { value ->
-                    box.store(value).asCompletable()
-                }
-                .concatAll()
-        }
+        override fun perform(box: Box<E>): Completable = box.storeBatch(values)
     }
 }

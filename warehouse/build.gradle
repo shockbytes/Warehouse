@@ -38,12 +38,9 @@ android {
 
 dependencies {
 
-    // TODO Check if this has to be in app module
-    lintChecks project(path: ':warehouse-rules')
     api project(path: ':warehouse-rules')
     api "androidx.annotation:annotation:1.2.0"
-
-
+    
     implementation 'com.google.code.gson:gson:2.8.6'
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"

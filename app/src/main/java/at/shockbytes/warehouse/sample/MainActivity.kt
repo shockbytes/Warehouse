@@ -17,7 +17,10 @@ import at.shockbytes.warehouse.box.memory.InMemoryBoxEngine
 import at.shockbytes.warehouse.firebase.FirebaseBoxEngine
 import at.shockbytes.warehouse.firebase.FirebaseBoxEngineConfiguration
 import at.shockbytes.warehouse.ledger.Ledger
+import at.shockbytes.warehouse.realm.RealmBoxEngine
+import at.shockbytes.warehouse.realm.RealmIdSelector
 import at.shockbytes.warehouse.sample.firebase.FirebaseMessageMapper
+import at.shockbytes.warehouse.sample.realm.RealmMessageMapper
 import com.google.firebase.database.FirebaseDatabase
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
@@ -27,6 +30,7 @@ import io.realm.RealmConfiguration
 import timber.log.Timber
 import java.io.File
 import java.lang.Math.random
+import kotlin.math.absoluteValue
 
 class MainActivity : AppCompatActivity() {
 
@@ -80,7 +84,6 @@ class MainActivity : AppCompatActivity() {
 
         warehouse = Warehouse.new(
             boxes = listOf(
-                /*
                 Box.defaultFrom(
                     RealmBoxEngine.fromRealm(
                         config,
@@ -91,7 +94,6 @@ class MainActivity : AppCompatActivity() {
                         )
                     ),
                 ),
-                */
                 Box.defaultFrom(
                     LogBoxEngine.withTag("LogBox"),
                 ),
@@ -112,7 +114,7 @@ class MainActivity : AppCompatActivity() {
                 )
             ),
             sharedLedger,
-            WarehouseConfiguration(leaderBoxId = BoxId.of("fb-messages"))
+            WarehouseConfiguration(leaderBoxId = BoxId.of("realm-android"))
         )
 
         sharedLedger.onLedgerEvents()
@@ -138,19 +140,23 @@ class MainActivity : AppCompatActivity() {
 
         warehouse.getAll()
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { messages ->
+            .subscribe ({ messages ->
                 (rvContent.adapter as ContentAdapter).apply {
                     setData(messages)
-                    rvContent.smoothScrollToPosition(messages.count() - 1)
+                    if (messages.isNotEmpty()) {
+                        rvContent.smoothScrollToPosition(messages.count() - 1)
+                    }
                 }
-            }
+            }, { throwable ->
+                Timber.e(throwable)
+            })
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
         when (item.itemId) {
             R.id.menu_create -> {
-                val id = "id-${random()}"
+                val id = "id_${random().absoluteValue.times(1_000_000).toInt()}"
                 store(Message(id, "You", "This is a message")) {
                     runOnUiThread {
                         showToast("Message with $id stored")
@@ -158,6 +164,20 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             R.id.menu_delete -> {
+                val latest = (rvContent.adapter as ContentAdapter).lastItem()
+                delete(latest) {
+                    runOnUiThread {
+                        showToast("Message with ${latest.id} deleted")
+                    }
+                }
+            }
+            R.id.menu_reset -> {
+
+                warehouse.reset().subscribe {
+                    runOnUiThread {
+                        showToast("All boxes reset")
+                    }
+                }
             }
         }
 
@@ -203,6 +223,23 @@ class MainActivity : AppCompatActivity() {
             .addTo(compositeDisposable)
     }
 
+    private fun delete(
+        message: Message,
+        onComplete: () -> Unit
+    ) {
+        warehouse.delete(message)
+            .subscribe(
+                {
+                    Timber.e("BOX: Successfully deleted in all boxes!")
+                    onComplete()
+                },
+                { throwable ->
+                    Timber.e(throwable)
+                }
+            )
+            .addTo(compositeDisposable)
+    }
+
     private fun getAll() {
 
         warehouse.getAll()
@@ -225,11 +262,5 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         compositeDisposable.clear()
-    }
-}
-
-private fun File.child(child: String): File {
-    return File(this.absolutePath + "/" + child).apply {
-        createNewFile()
     }
 }

@@ -137,19 +137,20 @@ There are a bunch of things that make this library not even suitable for a hobby
 ### General issues
 -[ ] Update documentation & usage in README.md
 -[ ] Test coverage
--[ ] Tests for FirebaseBox
+-[x] Tests for FirebaseBox
 -[ ] Tests for RealmBox
--[ ] Tests for Ledger
+-[x] Tests for Ledger
 -[x] Tests for InMemoryBox
 
 ### Box issues
 -[x] Initial box synchronization
 -[ ] A working RealmBoxEngine implementation
--[ ] A working FirebaseBoxEngine implementation
--[ ] Full reactive getAll method
+-[x] A working FirebaseBoxEngine implementation
+-[x] Full reactive getAll method
 
 ### BoxEngine issues
 -[x] `idSelector` can handle any data type as `id`, not only string
+-[ ] Firebase needs to be able to sync with outside events (cross platform sync)
 
 ### Warehouse issues
 -[x] Final Warehouse API
