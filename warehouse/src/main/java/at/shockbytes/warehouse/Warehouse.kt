@@ -5,6 +5,7 @@ import at.shockbytes.warehouse.box.BoxId
 import at.shockbytes.warehouse.ledger.Ledger
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.core.Single
 
 interface Warehouse<E> {
 
@@ -26,6 +27,8 @@ interface Warehouse<E> {
     ): Completable
 
     operator fun get(id: BoxId): Observable<List<E>>
+
+    fun <ID> getItemById(id: ID): Single<E>
 
     fun getAll(): Observable<List<E>>
 

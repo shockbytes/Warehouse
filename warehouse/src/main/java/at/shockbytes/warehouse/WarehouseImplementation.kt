@@ -13,6 +13,7 @@ import at.shockbytes.warehouse.util.merge
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.CompletableSource
 import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.core.Single
 
 class WarehouseImplementation<E> internal constructor(
     private val boxes: List<Box<E>>,
@@ -102,6 +103,18 @@ class WarehouseImplementation<E> internal constructor(
             }
             ?.getAll()
             ?: Observable.empty()
+    }
+
+    override fun <ID> getItemById(id: ID): Single<E> {
+        val readPredicate: (Box<E>) -> Boolean = { box ->
+            box.id == config.leaderBoxId && box.isEnabled
+        }
+
+        val leaderBox = boxes
+            .find(readPredicate)
+            ?: return Single.error(IllegalStateException("No LeaderBox available!"))
+
+        return leaderBox.getSingleElement(id)
     }
 
     override fun getAll(): Observable<List<E>> {
